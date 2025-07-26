@@ -6,10 +6,9 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    
 
-    public function login(): View
+    public function authentication()
     {
-        return view('auth.login');
+        return redirect()->back();
     }
 }
