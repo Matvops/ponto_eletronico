@@ -9,3 +9,7 @@ Route::middleware('guest')->group(function() {
     Route::get('/login', Login::class)->name('login');
     Route::post('/login', [AuthController::class, 'authentication'])->name('authentication');
 });
+
+Route::middleware('auth')->group(function() {
+    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+});
