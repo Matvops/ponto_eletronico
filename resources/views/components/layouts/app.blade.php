@@ -7,8 +7,7 @@
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     </head>
-    <body class="relative">
-        <livewire:loader />
+    <body>
         {{ $slot }}
     </body>
 </html>
