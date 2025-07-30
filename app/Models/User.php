@@ -20,5 +20,6 @@ class User extends AuthUser
         'created_at',
         'updated_at',
         'deleted_at',
+        'confirmation_code',
     ];
 }
