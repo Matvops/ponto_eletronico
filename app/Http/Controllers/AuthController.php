@@ -42,4 +42,14 @@ class AuthController extends Controller
         Auth::logout();
         return redirect()->route('login');
     }
+
+    public function sendEmailConfirmation($email) {
+        $response = $this->service->sendEmailConfirmation($email);
+
+        if($response) {
+            return back()
+                    ->withInput()
+                    ->with('error_send_email', $response->getMessage());
+        }
+    }
 }
