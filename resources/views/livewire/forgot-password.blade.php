@@ -2,9 +2,9 @@
     <div class="w-[40%] h-50 w-max-500 background-secondary-color rounded">
         <p class="mt-6 text-2xl font-inter text-center">Digite o email:</p>
 
-        <form wire:submit="submit" class="mr-auto px-5 pt-10">
-            <input wire:model="email" type="email" class="text-xl bg-white py-1 rounded outline-0 px-1 focus:px-3 transition-all duration- ease-in-out w-full">
-            <div class="flex justify-between my-4">
+        <form wire:submit.prevent="submit" class="mr-auto px-5 pt-10">
+            <input wire:model="email" type="email" class="text-xl bg-white py-1 rounded outline-0 px-1 focus:px-2.5 transition-all duration-100 ease-in-out w-full">
+            <fieldset class="flex justify-between my-4">
                 <a href="{{route('login')}}" class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow cursor-pointer">
                 Voltar
                 </a>
@@ -30,10 +30,14 @@
                     {{ session('error_send_email') }}
                     </span>
                 @endif
-
+                
                 <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow cursor-pointer">
                     Enviar código de confirmação
                 </button>
+            </fieldset>
+
+            <div wire:loading class="absolute">
+                <livewire:loader />
             </div>
         </form>
     </div>
