@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class AuthService {
     
@@ -82,5 +83,35 @@ class AuthService {
         $response =  Mail::to($user->email)->send(new ConfirmationCode($user->confirmation_code, $user->username));
 
         if(!$response) throw new Exception("Erro no envio para email de confirmação");
+    }
+
+    public function confirmCode(array $dados): Response
+    {
+        try {
+            DB::beginTransaction();
+            
+            $user = User::where('email', $dados['email'])
+                            ->whereNull('deleted_at')
+                            ->first();
+
+            $code = $this->concatenateNumbers($dados['numbers']);
+
+            if($user->confirmation_code !== $code) throw new Exception("Código inválido. Verifique seu email!"); 
+
+            $user->token = Str::random(64);
+            $user->confirmation_code = null;
+            $user->save();
+
+            DB::commit();
+            return Response::getResponse(true, data: ['token' => $user->token, 'email' => $user->email]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return Response::getResponse(false, $e->getMessage());
+        }
+    }
+
+    private function concatenateNumbers(array $numbers): int
+    {
+        return intval($numbers[0] . $numbers[1] . $numbers[2] . $numbers[3]);
     }
 }
