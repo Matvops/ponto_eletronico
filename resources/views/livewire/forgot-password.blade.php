@@ -36,7 +36,7 @@
                 </button>
             </fieldset>
 
-            <div wire:loading class="absolute">
+            <div wire:loading class="absolute left-[50%]">
                 <livewire:loader />
             </div>
         </form>
