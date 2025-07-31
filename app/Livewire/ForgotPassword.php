@@ -27,7 +27,7 @@ class ForgotPassword extends Component
 
         $service->sendEmailConfirmation($this->email);
 
-        return redirect()->route('confirm_code', ['email' => $this->email]);
+        return redirect()->route('confirm_code_view', ['email' => $this->email]);
     }
 
     #[Title('Recuperar senha')]
