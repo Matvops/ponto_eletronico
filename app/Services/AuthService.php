@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Utils\Response;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -65,7 +66,6 @@ class AuthService {
             return Response::getResponse(true, data: $user->email);
         } catch (Exception $e) {
             DB::rollBack();
-            error_log($e->getMessage());
             return Response::getResponse(false, $e->getMessage());
         }
     }
@@ -103,7 +103,7 @@ class AuthService {
             $user->save();
 
             DB::commit();
-            return Response::getResponse(true, data: ['token' => $user->token, 'email' => $user->email]);
+            return Response::getResponse(true, data: ['token' => Crypt::encrypt($user->token), 'email' => Crypt::encrypt($user->email)]);
         } catch (Exception $e) {
             DB::rollBack();
             return Response::getResponse(false, $e->getMessage());
@@ -113,5 +113,32 @@ class AuthService {
     private function concatenateNumbers(array $numbers): int
     {
         return intval($numbers[0] . $numbers[1] . $numbers[2] . $numbers[3]);
+    }
+
+    public function storeNewPassword(array $dados): Response
+    {
+        try {
+            DB::beginTransaction();
+
+            $token = Crypt::decrypt($dados['token']);
+            $email = Crypt::decrypt($dados['email']);
+
+            $user = User::where('email', $email)
+                            ->whereNull('deleted_at')
+                            ->first(); 
+            
+            if(!$user) throw new Exception('Email inválido');
+            if($user->token !== $token) throw new Exception('Token inválido');
+
+            $user->password = bcrypt($dados['password']);
+            $user->token = null;
+            $user->save();
+            
+            DB::commit();
+            return Response::getResponse(true);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return Response::getResponse(false, $e->getMessage());
+        }
     }
 }
