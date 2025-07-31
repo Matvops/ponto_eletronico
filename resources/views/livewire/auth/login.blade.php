@@ -46,4 +46,17 @@
         </h1>
         <img src="{{ Storage::url('images/pngwing.com.png') }}" alt="ponto" class="mx-auto my-32">
     </div>
+
+    <script>
+        window.addEventListener('success_store_new_password', (event) => {
+            Swal.fire({
+                title: event.detail[0],
+                text: event.detail[2],
+                position: event.detail[3],
+                icon: event.detail[1],
+                timer: 2000,
+                showConfirmButton: false,
+            })
+        });
+    </script>
 </div>
