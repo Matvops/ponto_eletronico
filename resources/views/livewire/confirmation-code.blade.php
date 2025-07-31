@@ -1,5 +1,5 @@
 <div class="flex justify-center items-center h-full">
-       <div class="w-[40%] w-max-500 h-max-80 background-secondary-color rounded flex flex-col box-border">
+       <div class="w-[40%] w-max-500 h-max-80 background-secondary-color rounded flex flex-col box-border shadow-sm">
             <h1 class="text-center mt-5 text-xl font-medium font-inter px-1">Confirme o código enviado para <span class="font-semibold">{{ $email }}</span></h1>
             <form action="{{ route('confirm_code') }}" method="POST" class="flex-1 px-6 my-6">
                 @csrf

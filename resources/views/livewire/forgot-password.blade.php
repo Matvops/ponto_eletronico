@@ -1,5 +1,5 @@
 <div class="flex justify-center items-center h-full">
-    <div class="w-[40%] h-50 w-max-500 background-secondary-color rounded">
+    <div class="w-[40%] h-50 w-max-500 background-secondary-color rounded shadow-sm">
         <p class="mt-6 text-2xl font-inter text-center">Digite o email:</p>
 
         <form wire:submit.prevent="submit" class="mr-auto px-5 pt-10">
