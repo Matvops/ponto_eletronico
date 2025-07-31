@@ -3,7 +3,7 @@
         @csrf
         <legend class="text-white font-inter font-semibold tracking-wide text-shadow-lg text-6xl">Login</legend>
         <div class="my-32 flex flex-col gap-12">
-            <label class="flex flex-col text-white text-4xl font-medium text-shadow-md">
+            <label class="flex flex-col text-white text-4xl font-medium text-shadow-md font-inter">
                 @error('email') 
                     <p>Email <span class="text-red-600 inline text-xl font-normal text-shadow-xs"> {{ $message }}</span></p> 
                 @else 
@@ -13,7 +13,7 @@
                     class="mt-2 background-secondary-color py-3 px-2 outline-0 inset-shadow-gray-700 focus:inset-shadow-xs focus:px-3 transition-all duration- ease-in-out text-black text-xl font-light rounded"
                     autocomplete="off">
             </label>
-            <label class="flex flex-col text-white text-4xl font-medium text-shadow-md">
+            <label class="flex flex-col text-white text-4xl font-medium text-shadow-md font-inter">
                 @error('password') 
                     <p>Senha <span class="text-red-600 inline text-xl font-normal text-shadow-xs"> {{ $message }}</span></p> 
                 @else 
@@ -21,11 +21,12 @@
                 @enderror
                 <input type="password" name="password"
                     class="mt-2 background-secondary-color py-3 px-2 outline-0 inset-shadow-gray-700 focus:inset-shadow-xs focus:px-3 transition-all duration-100 ease-in-out text-black text-xl font-light rounded">
+                <a href="{{route('forgot_password')}}" class="font-inter text-blue-700 font-light text-lg underline text-shadow-xs pt-2 hover:text-blue-900 transition-colors duration-150 ease-in-out">Esqueci minha senha</a>
             </label>
 
             @if(session('error_auth'))
                 <span 
-                    class="text-red-600 text-center m-0 p-0"
+                    class="text-red-600 text-center m-0 p-0 font-inter"
                     x-data="{show:true}"
                     x-show="show"
                     x-init="setTimeout(() => show = false, 5000)"
@@ -45,4 +46,17 @@
         </h1>
         <img src="{{ Storage::url('images/pngwing.com.png') }}" alt="ponto" class="mx-auto my-32">
     </div>
+
+    <script>
+        window.addEventListener('success_store_new_password', (event) => {
+            Swal.fire({
+                title: event.detail[0],
+                text: event.detail[2],
+                position: event.detail[3],
+                icon: event.detail[1],
+                timer: 2000,
+                showConfirmButton: false,
+            })
+        });
+    </script>
 </div>
