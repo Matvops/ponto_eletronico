@@ -1,9 +1,13 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
+use App\Http\Middleware\IsAdminMiddleware;
 use App\Livewire\Auth\Login;
 use App\Livewire\ConfirmationCode;
 use App\Livewire\ForgotPassword;
+use App\Livewire\HomeAdmin;
+use App\Livewire\HomeUser;
 use App\Livewire\NewPassword;
 use Illuminate\Support\Facades\Route;
 
@@ -21,4 +25,6 @@ Route::middleware('guest')->group(function() {
 
 Route::middleware('auth')->group(function() {
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::middleware(IsAdminMiddleware::class)->get('/', HomeAdmin::class)->name('home_admin');
+    Route::get('/home', HomeUser::class)->name('home_user');
 });
