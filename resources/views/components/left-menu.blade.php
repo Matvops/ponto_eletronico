@@ -1,12 +1,30 @@
-<div class="class w-[20%] max-w-100 h-full background-primary-color flex flex-col justify-between py-4 ">
-    <a href="{{ route('home_admin')}}" class="text-white font-bold text-3xl font-inter m-0 tracking-wider text-shadow-lg pl-4 pr-16">PONTO PRATI</a>
+<div class="class min-w-50 w-fit max-w-100 h-full background-primary-color flex flex-col justify-between py-4 px-4">
+    <a href="{{ route('home_admin')}}" class="text-white font-bold text-3xl font-inter m-0 tracking-wider text-shadow-lg w-fit mx-auto">PONTO PRATI</a>
 
-    <div class="flex flex-col gap-4 py-2 pl-4 pr-16">
-        @can('viewAll', App\Models\User::class)
-        <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">Visualizar usuários</a>
+    <div class="flex flex-col gap-4 py-2 w-fit mx-auto">
+
+        @can('viewAny', App\Models\TimeEntry::class)
+            <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">VISUALIZAR PONTOS</a>
         @endcan
+
+        @can('viewAll', App\Models\User::class)
+        <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">VISUALIZAR USUÁRIOS</a>
+        @endcan
+
         @can('create', App\Models\User::class)
-            <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">Cadastro</a>
+            <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">CADASTRAR</a>
+        @endcan
+
+        @can('viewAll', App\Models\TimeEntry::class)
+            <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">VISUALIZAR DIAS</a>
+        @endcan
+
+         @can('viewAll', App\Models\TimeEntry::class)
+            <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">HISTÓRICO</a>
+        @endcan
+        
+        @can('view', App\Models\TimeEntry::class)
+            <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">BATER PONTO</a>
         @endcan
     </div>
 

@@ -36,7 +36,7 @@ class AuthController extends Controller
                     ->with('error_auth', $response->getMessage());
         }
 
-        return redirect()->route('home_admin');
+        return redirect()->intended(route('home_admin'));
     }
 
     public function logout(): RedirectResponse

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as AuthUser;
 
 class User extends AuthUser
@@ -22,4 +23,9 @@ class User extends AuthUser
         'deleted_at',
         'confirmation_code',
     ];
+
+    public function timeEntries(): HasMany
+    {
+        return $this->hasMany(TimeEntry::class, 'tie_usr_id');
+    }
 }
