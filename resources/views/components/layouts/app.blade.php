@@ -17,5 +17,6 @@
             </a>
         </div>  
         {{ $slot }}
+        <script src="{{ asset('assets/js/modal.js') }}"></script>
     </body>
 </html>
