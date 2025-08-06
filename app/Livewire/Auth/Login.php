@@ -10,7 +10,7 @@ class Login extends Component
     public function mount()
     {
         if(session()->has('success_store_new_password')) {
-            $this->dispatch('success_store_new_password', 
+            $this->dispatch('exibirModal', 
                 "Sucesso",
                 "success",
                 "Nova senha cadastrada!",
