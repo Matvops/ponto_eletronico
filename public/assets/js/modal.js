@@ -7,4 +7,6 @@ window.addEventListener('exibirModal', (event) => {
         timer: 2000,
         showConfirmButton: false,
     })
+
+    window.scrollTo({ top: scrollY });
 });
