@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Mail\ConfirmationCode;
 use App\Models\User;
 use App\Utils\Response;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
@@ -79,7 +80,8 @@ class AuthService {
         return intval($code);
     }
 
-    private function send($user) {
+    private function send($user): void
+    {
         $response =  Mail::to($user->email)->send(new ConfirmationCode($user->confirmation_code, $user->username));
 
         if(!$response) throw new Exception("Erro no envio para email de confirmação");
@@ -136,6 +138,30 @@ class AuthService {
             
             DB::commit();
             return Response::getResponse(true);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return Response::getResponse(false, $e->getMessage());
+        }
+    }
+
+    public function verifyEmail($token): Response
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = User::where('token', $token)
+                            ->whereNull('email_verified_at')
+                            ->whereNull('deleted_at')
+                            ->first();
+            
+            if(!$user) throw new Exception("Token inválido");
+
+            $user->token = null;
+            $user->email_verified_at = Carbon::now();
+            $user->save();
+            
+            DB::commit();
+            return Response::getResponse(true, "Email confirmado com sucesso!");
         } catch (Exception $e) {
             DB::rollBack();
             return Response::getResponse(false, $e->getMessage());
