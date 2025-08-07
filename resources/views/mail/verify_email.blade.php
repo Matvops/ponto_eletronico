@@ -38,7 +38,7 @@
                     </tr>
                     <tr>
                         <td style="font-family: Arial, sans-serif; font-size: 12px; color: #cccccc; padding-top: 30px;">
-                            &copy; {{ date('Y') }} Seu Sistema. Todos os direitos reservados.
+                            &copy; {{ date('Y') }} Ponto Pratico. Todos os direitos reservados.
                         </td>
                     </tr>
                 </table>
