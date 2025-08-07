@@ -36,7 +36,7 @@ class AuthService {
 
         if(!$user) throw new Exception("Usuário não encontrado");
 
-        if(!$user->email_verified_at) throw new Exception("Verifique seu cadastro no email");
+        if(!$user->email_verified_at) throw new Exception("Verifique seu email.");
 
         if(!password_verify($password, $user->password)) throw new Exception("Email ou senha são inválidos");
 
