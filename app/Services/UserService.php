@@ -81,7 +81,7 @@ class UserService {
     private function buildUrl($token): string
     {
         $queryString = http_build_query(['token' => $token]);
-        $baseUrl = 'http://localhost:8080/verifica_email';
+        $baseUrl = 'http://localhost:8080/verify_email';
         return $baseUrl . '?' . $queryString;
     }
 }
