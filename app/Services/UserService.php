@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 class UserService {
 
 
-    public function updateUserData(array $userData)
+    public function updateUserData(array $userData): Response
     {
         try {
 
@@ -80,8 +80,7 @@ class UserService {
 
     private function buildUrl($token): string
     {
-        $queryString = http_build_query(['token' => $token]);
-        $baseUrl = 'http://localhost:8080/verify_email';
-        return $baseUrl . '?' . $queryString;
+        $baseUrl = 'http://localhost:8000/verify_email';
+        return $baseUrl . '/' . $token;
     }
 }
