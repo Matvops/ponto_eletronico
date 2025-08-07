@@ -17,6 +17,15 @@ class Login extends Component
                 "center"
             );
         }
+
+        if(session()->has('success_update_profile')) {
+            $this->dispatch('exibirModal', 
+                "Sucesso",
+                "success",
+                session('success_update_profile'),
+                "center"
+            );
+        }
     }
 
     #[Title('Login')]
