@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProfileRequest;
 use App\Services\UserService;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
@@ -17,7 +17,7 @@ class UserController extends Controller
         $this->service = $service;
     } 
 
-    public function update(UpdateProfileRequest $request) 
+    public function update(UpdateProfileRequest $request): RedirectResponse
     {
 
         $dados = [
