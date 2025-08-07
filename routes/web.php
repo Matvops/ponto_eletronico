@@ -10,7 +10,6 @@ use App\Livewire\HomeAdmin;
 use App\Livewire\HomeUser;
 use App\Livewire\NewPassword;
 use App\Livewire\UpdateProfile;
-use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 
@@ -23,6 +22,7 @@ Route::middleware('guest')->group(function() {
     Route::post('/confirm_code', [AuthController::class, 'confirmCode'])->name('confirm_code');
     Route::get('/new_password/{email}/{token}', NewPassword::class)->name('new_password');
     Route::post('/new_password', [AuthController::class, 'storeNewPassword'])->name('store_new_password');
+    Route::get('/verify_email/{token}', [AuthController::class, 'verifyEmail'])->name('verify_email');
 });
 
 Route::middleware('auth')->group(function() {
