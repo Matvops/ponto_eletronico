@@ -26,6 +26,24 @@ class Login extends Component
                 "center"
             );
         }
+
+        if(session()->has('error_verify_email')) {
+            $this->dispatch('exibirModal', 
+                "Erro!",
+                "error",
+                session('error_verify_email'),
+                "center"
+            );
+        }
+
+        if(session()->has('success_verify_email')) {
+            $this->dispatch('exibirModal', 
+                "Sucesso",
+                "success",
+                session('success_verify_email'),
+                "center"
+            );
+        }
     }
 
     #[Title('Login')]
