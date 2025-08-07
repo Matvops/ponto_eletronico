@@ -1,4 +1,4 @@
-<div class="flex h-full">
+<div class="flex h-[100vh]">
     <x-left-menu />
     <div class="flex flex-col items-center gap-48">
         <h1 class="font-semibold text-4xl font-inter text-center tracking-wider mt-24">Sobre</h1>

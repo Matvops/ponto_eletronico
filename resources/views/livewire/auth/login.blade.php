@@ -1,4 +1,4 @@
-<div class="flex">
+<div class="flex h-[100vh]">
     <form action="" method="POST" class="px-6 mt-12 text-shadow-sm flex flex-col w-[30%] justify-between">
         @csrf
         <legend class="text-white font-inter font-semibold tracking-wide text-shadow-lg text-6xl">Login</legend>

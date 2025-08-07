@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\IsAdminMiddleware;
 use App\Livewire\Auth\Login;
 use App\Livewire\ConfirmationCode;
@@ -9,6 +9,7 @@ use App\Livewire\ForgotPassword;
 use App\Livewire\HomeAdmin;
 use App\Livewire\HomeUser;
 use App\Livewire\NewPassword;
+use App\Livewire\UpdateProfile;
 use Illuminate\Support\Facades\Route;
 
 
@@ -21,10 +22,13 @@ Route::middleware('guest')->group(function() {
     Route::post('/confirm_code', [AuthController::class, 'confirmCode'])->name('confirm_code');
     Route::get('/new_password/{email}/{token}', NewPassword::class)->name('new_password');
     Route::post('/new_password', [AuthController::class, 'storeNewPassword'])->name('store_new_password');
+    Route::get('/verify_email/{token}', [AuthController::class, 'verifyEmail'])->name('verify_email');
 });
 
 Route::middleware('auth')->group(function() {
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::middleware(IsAdminMiddleware::class)->get('/', HomeAdmin::class)->name('home_admin');
     Route::get('/home', HomeUser::class)->name('home_user');
+    Route::get('/update_profile', UpdateProfile::class)->name('update_profile');
+    Route::post('/update_profile', [UserController::class, 'update'])->name('save_updated_profile');
 });

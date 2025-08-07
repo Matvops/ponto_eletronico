@@ -97,4 +97,16 @@ class AuthController extends Controller
 
         return redirect()->route('login')->with('success_store_new_password', true);
     }
+
+    public function verifyEmail($token): RedirectResponse
+    {
+        $response = $this->service->verifyEmail($token);
+
+        if(!$response->getStatus())
+            return redirect()->route('login')
+                        ->with('error_verify_email', $response->getMessage());
+
+        return redirect()->route('login')
+                        ->with('success_verify_email', $response->getMessage());
+    }
 }

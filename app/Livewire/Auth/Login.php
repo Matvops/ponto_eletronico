@@ -10,10 +10,37 @@ class Login extends Component
     public function mount()
     {
         if(session()->has('success_store_new_password')) {
-            $this->dispatch('success_store_new_password', 
+            $this->dispatch('exibirModal', 
                 "Sucesso",
                 "success",
                 "Nova senha cadastrada!",
+                "center"
+            );
+        }
+
+        if(session()->has('success_update_profile')) {
+            $this->dispatch('exibirModal', 
+                "Sucesso",
+                "success",
+                session('success_update_profile'),
+                "center"
+            );
+        }
+
+        if(session()->has('error_verify_email')) {
+            $this->dispatch('exibirModal', 
+                "Erro!",
+                "error",
+                session('error_verify_email'),
+                "center"
+            );
+        }
+
+        if(session()->has('success_verify_email')) {
+            $this->dispatch('exibirModal', 
+                "Sucesso",
+                "success",
+                session('success_verify_email'),
                 "center"
             );
         }
