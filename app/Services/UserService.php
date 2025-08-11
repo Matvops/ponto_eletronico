@@ -13,14 +13,6 @@ use Illuminate\Support\Str;
 
 class UserService {
 
-    private EmailService $emailService;
-
-    public function __construct(EmailService $emailService)
-    {
-        $this->emailService = $emailService;
-    }
-
-
     public function updateUserData(array $userData): Response
     {
         try {
@@ -59,7 +51,9 @@ class UserService {
 
             $path = '/verify_email';
             $pathParams = ['token' => $user->token];
-            EmailService::sendWithPathParams($path, $pathParams, $user);
+
+            $emailService = new EmailService($user, new VerifyEmail($user->username));
+            $emailService->sendWithPathParams($path, $pathParams);
 
             $message = "Email de confirmação enviado! Verifique sua caixa de mensagens.";
             $emailAlterado = true;
