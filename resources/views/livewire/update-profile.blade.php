@@ -7,7 +7,7 @@
         @csrf
         
         <div class="my-24 flex flex-col gap-12 w-[70%] max-w-150">
-            <label class="flex flex-col text-white text-4xl font-medium text-shadow-md font-inter ">
+            <label class="flex flex-col text-gray-700 text-4xl font-medium text-shadow-md font-inter">
                 @error('username') 
                     <p>Nome <span class="text-red-600 inline text-xl font-normal text-shadow-xs"> {{ $message }}</span></p> 
                 @else 
@@ -20,7 +20,7 @@
                     >
             </label>
 
-            <label class="flex flex-col text-white text-4xl font-medium text-shadow-md font-inter">
+            <label class="flex flex-col text-gray-700 text-4xl font-medium text-shadow-md font-inter">
                 @error('email') 
                     <p>Email <span class="text-red-600 inline text-xl font-normal text-shadow-xs"> {{ $message }}</span></p> 
                 @else 
@@ -34,7 +34,7 @@
         </div>
 
         <div class=" mx-auto">
-            <label class="flex flex-col text-white text-shadow-md font-inter">
+            <label class="flex flex-col text-shadow-md font-inter">
                 @error('password') 
                     <p class="text-red-500 text-center font-medium text-xl">Confirme a atualização com sua senha <span class="text-red-600 inline text-xl font-normal text-shadow-xs"> {{ $message }}</span></p> 
                 @else 
