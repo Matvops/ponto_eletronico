@@ -2,33 +2,42 @@
 
 namespace App\Services;
 
-use App\Mail\ConfirmationCode;
 use App\Mail\VerifyEmail;
 use App\Models\User;
 use Exception;
+use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Mail;
 
 class EmailService {
 
-    
-    public function sendConfirmationCode(User $user) : void
+    private User $user;
+    private Mailable $mailable;
+
+    public function __construct(User $user, Mailable $mailable)
     {
-        $response =  Mail::to($user->email)->send(new ConfirmationCode($user->confirmation_code, $user->username));
+        $this->user = $user;
+        $this->mailable = $mailable;
+    }
+
+    public function send(): void
+    {
+        $response =  Mail::to($this->user->email)->send($this->mailable);
 
         if(!$response) throw new Exception("Falha ao enviar email");
     }
 
-    public static function sendWithPathParams(string $path, array $pathParams, User $user): void
+    public function sendWithPathParams(string $path, array $pathParams): void
     {
-        
-        $url = self::buildUrl($path, $pathParams);
+     
+        $url = $this->buildUrl($path, $pathParams);
+        $this->mailable->setLink($url);
 
-        $response = Mail::to($user->email)->send(new VerifyEmail($user->username, $url));
+        $response = Mail::to($this->user->email)->send($this->mailable);
 
         if(!$response) throw new Exception("Falha ao enviar email");
     }
 
-    private static function buildUrl(string $path, array $pathParams): string
+    private function buildUrl(string $path, array $pathParams): string
     {
 
         $base = env("BASE_URL_LOCAL");
