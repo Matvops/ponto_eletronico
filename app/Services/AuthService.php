@@ -61,8 +61,8 @@ class AuthService {
             $user->confirmation_code = $this->generateRandomConfirmationCode();
             $user->save();    
 
-            $emailService = new EmailService;
-            $emailService->sendConfirmationCode($user);
+            $emailService = new EmailService($user, new ConfirmationCode($user->confirmation_code, $user->username));
+            $emailService->send();
 
             DB::commit();
             return Response::getResponse(true, data: $user->email);
