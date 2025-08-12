@@ -18,6 +18,15 @@ class HomeUser extends Component
                 "center"
             );
         }
+
+        if(session()->has('success_register_user')) {
+            $this->dispatch('exibirModal',
+                "Sucesso!",
+                "success",
+                session('success_register_user'),
+                "center"
+            );
+        }
     }
 
 

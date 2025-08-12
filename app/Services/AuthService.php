@@ -53,15 +53,16 @@ class AuthService {
             DB::beginTransaction();
 
             $user = User::where('email', $email)
-                        ->whereNull('deleted_at')
-                        ->first();
+                            ->whereNull('deleted_at')
+                            ->first();
 
             if(!$user->email_verified_at) throw new Exception("Verifique seu cadastro no email");
 
             $user->confirmation_code = $this->generateRandomConfirmationCode();
             $user->save();    
-            
-            $this->send($user);
+
+            $emailService = new EmailService($user, new ConfirmationCode($user->confirmation_code, $user->username));
+            $emailService->send();
 
             DB::commit();
             return Response::getResponse(true, data: $user->email);
@@ -78,13 +79,6 @@ class AuthService {
         $code = str_pad(strval($random), 4, '0', STR_PAD_RIGHT);
 
         return intval($code);
-    }
-
-    private function send($user): void
-    {
-        $response =  Mail::to($user->email)->send(new ConfirmationCode($user->confirmation_code, $user->username));
-
-        if(!$response) throw new Exception("Erro no envio para email de confirmação");
     }
 
     public function confirmCode(array $dados): Response

@@ -13,10 +13,12 @@ class VerifyEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public string $link;
+
     /**
      * Create a new message instance.
      */
-    public function __construct(public string $username, public string $link)
+    public function __construct(public string $username)
     {
         //
     }
@@ -50,5 +52,10 @@ class VerifyEmail extends Mailable
     public function attachments(): array
     {
         return [];
+    }
+
+    public function setLink($link)
+    {
+        $this->link = $link;
     }
 }

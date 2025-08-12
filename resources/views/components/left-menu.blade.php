@@ -12,7 +12,7 @@
         @endcan
 
         @can('create', App\Models\User::class)
-            <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">CADASTRAR</a>
+            <a href="{{ route('register_user') }}" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">CADASTRAR</a>
         @endcan
 
         @can('viewAll', App\Models\TimeEntry::class)

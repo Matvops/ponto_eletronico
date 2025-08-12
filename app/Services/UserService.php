@@ -13,7 +13,6 @@ use Illuminate\Support\Str;
 
 class UserService {
 
-
     public function updateUserData(array $userData): Response
     {
         try {
@@ -50,7 +49,11 @@ class UserService {
             $user->email_verified_at = null;
             $user->save();
 
-            $this->sendEmail($user);
+            $path = '/verify_email';
+            $pathParams = ['token' => $user->token];
+
+            $emailService = new EmailService($user, new VerifyEmail($user->username));
+            $emailService->sendWithPathParams($path, $pathParams);
 
             $message = "Email de confirmação enviado! Verifique sua caixa de mensagens.";
             $emailAlterado = true;
@@ -68,19 +71,33 @@ class UserService {
         ];
     }
 
-    private function sendEmail($user): void
-    {   
-        
-        $url = $this->buildUrl($user->token);
-
-        $response = Mail::to($user->email)->send(new VerifyEmail($user->username, $url));
-
-        if(!$response) throw new Exception("Falha ao enviar email de verificação");
-    }
-
-    private function buildUrl($token): string
+    public function register(array $userData): Response
     {
-        $baseUrl = 'http://localhost:8000/verify_email';
-        return $baseUrl . '/' . $token;
+        try {
+            DB::beginTransaction();
+
+            $user = new User();
+            $user->username = $userData['username'];
+            $user->email = $userData['email'];
+            $user->password = bcrypt($userData['password']);
+            $user->role = strtoupper($userData['role']);
+            $user->email_verified_at = null;
+            $user->token = Str::random(64);
+            $user->confirmation_code = null;
+            $user->save();
+
+            $path = '/verify_email';
+            $pathParams = ['token' => $user->token];
+
+            $emailService = new EmailService($user, new VerifyEmail($user->username));
+            $emailService->sendWithPathParams($path, $pathParams);
+            $message = "Email de confirmação enviado para $user->email! Verifique a caixa de mensagens.";
+
+            DB::commit();
+            return Response::getResponse(true, $message);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return Response::getResponse(false, $e->getMessage());
+        }
     }
 }

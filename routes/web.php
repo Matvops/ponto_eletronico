@@ -9,6 +9,7 @@ use App\Livewire\ForgotPassword;
 use App\Livewire\HomeAdmin;
 use App\Livewire\HomeUser;
 use App\Livewire\NewPassword;
+use App\Livewire\RegisterUser;
 use App\Livewire\UpdateProfile;
 use Illuminate\Support\Facades\Route;
 
@@ -31,4 +32,6 @@ Route::middleware('auth')->group(function() {
     Route::get('/home', HomeUser::class)->name('home_user');
     Route::get('/update_profile', UpdateProfile::class)->name('update_profile');
     Route::post('/update_profile', [UserController::class, 'update'])->name('save_updated_profile');
+    Route::get('/register_user', RegisterUser::class)->name('register_user');
+    Route::middleware(IsAdminMiddleware::class)->post('/register_user', [UserController::class, 'register'])->name('register');
 });
