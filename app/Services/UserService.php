@@ -71,5 +71,33 @@ class UserService {
         ];
     }
 
-    
+    public function register(array $userData): Response
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = new User();
+            $user->username = $userData['username'];
+            $user->email = $userData['email'];
+            $user->password = bcrypt($userData['password']);
+            $user->role = strtoupper($userData['role']);
+            $user->email_verified_at = null;
+            $user->token = Str::random(64);
+            $user->confirmation_code = null;
+            $user->save();
+
+            $path = '/verify_email';
+            $pathParams = ['token' => $user->token];
+
+            $emailService = new EmailService($user, new VerifyEmail($user->username));
+            $emailService->sendWithPathParams($path, $pathParams);
+            $message = "Email de confirmação enviado para $user->email! Verifique a caixa de mensagens.";
+
+            DB::commit();
+            return Response::getResponse(true, $message);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return Response::getResponse(false, $e->getMessage());
+        }
+    }
 }
