@@ -11,6 +11,7 @@ use App\Livewire\HomeUser;
 use App\Livewire\NewPassword;
 use App\Livewire\RegisterUser;
 use App\Livewire\UpdateProfile;
+use App\Livewire\ViewUsers;
 use Illuminate\Support\Facades\Route;
 
 
@@ -34,4 +35,5 @@ Route::middleware('auth')->group(function() {
     Route::post('/update_profile', [UserController::class, 'update'])->name('save_updated_profile');
     Route::get('/register_user', RegisterUser::class)->name('register_user');
     Route::middleware(IsAdminMiddleware::class)->post('/register_user', [UserController::class, 'register'])->name('register');
+    Route::middleware(IsAdminMiddleware::class)->get('/view_users', ViewUsers::class)->name('view_users');
 });
