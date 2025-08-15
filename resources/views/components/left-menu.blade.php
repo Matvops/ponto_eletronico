@@ -1,4 +1,4 @@
-<div class="class min-w-50 w-fit max-w-100 h-full background-primary-color flex flex-col justify-between py-4 px-4">
+<div class="min-w-50 w-fit max-w-100 h-full background-primary-color flex flex-col justify-between py-4 px-4">
     <a href="{{ route('home_admin')}}" class="text-white font-bold text-3xl font-inter m-0 tracking-wider text-shadow-lg w-fit mx-auto">PONTO PRATI</a>
 
     <div class="flex flex-col gap-4 py-2 w-fit mx-auto">
@@ -8,7 +8,7 @@
         @endcan
 
         @can('viewAll', App\Models\User::class)
-        <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">VISUALIZAR USUÁRIOS</a>
+        <a href="{{ route('view_users') }}" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">VISUALIZAR USUÁRIOS</a>
         @endcan
 
         @can('create', App\Models\User::class)
