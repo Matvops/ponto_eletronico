@@ -13,13 +13,11 @@ return new class extends Migration
     {
         Schema::create('time_entries', function (Blueprint $table) {
             $table->id('tie_id')->autoIncrement();
-            $table->foreignId('tie_ent_id')
-                    ->references('ent_id')
-                    ->on('entry_types');
             $table->foreignId('tie_usr_id')
                     ->references('usr_id')
                     ->on('users');
             $table->timestamp('date');
+            $table->enum('type', ['ENTRADA', 'SAIDA']);
             $table->timestamps();
         });
     }
