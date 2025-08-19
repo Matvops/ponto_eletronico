@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DeleteUserRequest;
 use App\Http\Requests\RegisterNewUserRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Services\UserService;
@@ -69,5 +70,17 @@ class UserController extends Controller
 
         return redirect()->route('home_admin')
                             ->with('success_register_user',  $response->getMessage());
+    }
+
+    public function delete(DeleteUserRequest $request): RedirectResponse
+    {
+        $response = $this->service->delete($request->input('id'));
+
+        if(!$response->getStatus()) {
+            return back()->withInput()
+                            ->with('error_delete_user', $response->getMessage());
+        }
+
+        return back()->with('success_delete_user', $response->getMessage());
     }
 }
