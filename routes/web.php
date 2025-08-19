@@ -36,4 +36,5 @@ Route::middleware('auth')->group(function() {
     Route::get('/register_user', RegisterUser::class)->name('register_user');
     Route::middleware(IsAdminMiddleware::class)->post('/register_user', [UserController::class, 'register'])->name('register');
     Route::middleware(IsAdminMiddleware::class)->get('/view_users', ViewUsers::class)->name('view_users');
+    Route::delete('/delete_user', [UserController::class, 'delete'])->name('delete_user');
 });
