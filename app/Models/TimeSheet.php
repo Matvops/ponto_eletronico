@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class TimeEntry extends Model
+class TimeSheet extends Model
 {
-    public $table = 'time_entries';
-    public $primaryKey = 'tie_id';
+    public $table = 'time_sheet';
+    public $primaryKey = 'tis_id';
 
     public $fillable = [
         'tie_usr_id',

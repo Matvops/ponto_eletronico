@@ -27,8 +27,8 @@ class User extends AuthUser
         'confirmation_code',
     ];
 
-    public function timeEntries(): HasMany
+    public function timeSheets(): HasMany
     {
-        return $this->hasMany(TimeEntry::class, 'tie_usr_id');
+        return $this->hasMany(TimeSheet::class, 'tie_usr_id');
     }
 }

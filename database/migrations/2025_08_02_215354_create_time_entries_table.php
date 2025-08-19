@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('time_entries', function (Blueprint $table) {
-            $table->id('tie_id')->autoIncrement();
-            $table->foreignId('tie_usr_id')
+        Schema::create('time_sheet', function (Blueprint $table) {
+            $table->id('tis_id')->autoIncrement();
+            $table->foreignId('tis_usr_id')
                     ->references('usr_id')
                     ->on('users');
             $table->timestamp('date');
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('time_entries');
+        Schema::dropIfExists('time_sheet');
     }
 };
