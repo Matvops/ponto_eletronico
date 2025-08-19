@@ -3,7 +3,6 @@
 namespace App\Livewire;
 
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -16,6 +15,28 @@ class ViewUsers extends Component
     public $query = '';
     public $number = 2;
     public $filter = 'ASC';
+
+
+    public function mount()
+    {
+        if(session()->has('error_delete_user')) {
+            $this->dispatch('exibirModal',
+                "Erro!",
+                "error",
+                session('error_delete_user'),
+                "center"
+            );
+        }
+
+        if(session()->has('success_delete_user')) {
+            $this->dispatch('exibirModal',
+                "Sucesso!",
+                "success",
+                session('success_delete_user'),
+                "center"
+            );
+        }
+    }
 
     public function asc()
     {

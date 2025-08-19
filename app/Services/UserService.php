@@ -7,8 +7,8 @@ use App\Models\User;
 use App\Utils\Response;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class UserService {
@@ -98,6 +98,27 @@ class UserService {
         } catch (Exception $e) {
             DB::rollBack();
             return Response::getResponse(false, $e->getMessage());
+        }
+    }
+
+    public function delete($id): Response
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = User::where('usr_id', Crypt::decrypt($id))
+                ->whereNull('deleted_at')
+                ->first();
+
+            if(!$user) throw new Exception();
+
+            $user->delete();
+
+            DB::commit();
+            return Response::getResponse(true, "Usuário $user->username deletado");
+        } catch(Exception $e) {
+            DB::rollBack();
+            return Response::getResponse(false, "Erro ao deletar usuário");
         }
     }
 }
