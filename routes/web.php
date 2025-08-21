@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\IsAdminMiddleware;
+use App\Http\Middleware\IsUserMiddleware;
 use App\Livewire\Auth\Login;
 use App\Livewire\ConfirmationCode;
 use App\Livewire\ForgotPassword;
@@ -11,6 +12,7 @@ use App\Livewire\HomeUser;
 use App\Livewire\NewPassword;
 use App\Livewire\RegisterUser;
 use App\Livewire\UpdateProfile;
+use App\Livewire\ViewDays;
 use App\Livewire\ViewUsers;
 use Illuminate\Support\Facades\Route;
 
@@ -37,4 +39,5 @@ Route::middleware('auth')->group(function() {
     Route::middleware(IsAdminMiddleware::class)->post('/register_user', [UserController::class, 'register'])->name('register');
     Route::middleware(IsAdminMiddleware::class)->get('/view_users', ViewUsers::class)->name('view_users');
     Route::delete('/delete_user', [UserController::class, 'delete'])->name('delete_user');
+    Route::middleware(IsUserMiddleware::class)->get('/view_time_sheets', ViewDays::class)->name('view_days');
 });
