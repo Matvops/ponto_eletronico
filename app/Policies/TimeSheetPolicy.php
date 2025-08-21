@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\TimeEntry;
+use App\Models\TimeSheet;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class TimeEntryPolicy
+class TimeSheetPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -35,15 +35,15 @@ class TimeEntryPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, TimeEntry $timeEntry): bool
+    public function update(User $user, TimeSheet $timeSheet): bool
     {
-        return $user->role === 'USER' && $user->usr_id === $timeEntry->tie_usr_id;
+        return $user->role === 'USER' && $user->usr_id === $timeSheet->tis_usr_id;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, TimeEntry $timeEntry): bool
+    public function delete(User $user, TimeSheet $timeSheet): bool
     {
         return false;
     }
@@ -51,7 +51,7 @@ class TimeEntryPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, TimeEntry $timeEntry): bool
+    public function restore(User $user, TimeSheet $timeSheet): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class TimeEntryPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, TimeEntry $timeEntry): bool
+    public function forceDelete(User $user, TimeSheet $timeSheet): bool
     {
         return false;
     }
