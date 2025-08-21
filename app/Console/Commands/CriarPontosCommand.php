@@ -43,7 +43,7 @@ class CriarPontosCommand extends Command
                 $entry->tis_usr_id = $usr_id;    
                 $entry->date = Carbon::now()->format('Y-m-d');    
                 $entry->type = $type;    
-                $entry->updated_at = null;    
+                $entry->updated_at = Carbon::now()->format('Y-m-d 00:00:00');   
                 $entry->save();
     }
 }
