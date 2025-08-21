@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('entry_types', function (Blueprint $table) {
-            $table->id('ent_id')->autoIncrement();
-            $table->enum('description', ['ENTRADA', 'SAIDA']);
+        Schema::create('holidays', function (Blueprint $table) {
+            $table->id('hol_id')->autoIncrement();
+            $table->date('date');
+            $table->string('description', 30);
+            $table->unique('date');
         });
     }
 
@@ -22,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('entry_types');
+        Schema::dropIfExists('holidays');
     }
 };

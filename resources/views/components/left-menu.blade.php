@@ -3,7 +3,7 @@
 
     <div class="flex flex-col gap-4 py-2 w-fit mx-auto">
 
-        @can('viewAny', App\Models\TimeEntry::class)
+        @can('viewAny', App\Models\TimeSheet::class)
             <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">VISUALIZAR PONTOS</a>
         @endcan
 
@@ -15,15 +15,15 @@
             <a href="{{ route('register_user') }}" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">CADASTRAR</a>
         @endcan
 
-        @can('viewAll', App\Models\TimeEntry::class)
-            <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">VISUALIZAR DIAS</a>
+        @can('viewAll', App\Models\TimeSheet::class)
+            <a href=" {{route('view_days')}} " class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">VISUALIZAR DIAS</a>
         @endcan
 
-         @can('viewAll', App\Models\TimeEntry::class)
+         @can('viewAll', App\Models\TimeSheet::class)
             <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">HISTÓRICO</a>
         @endcan
         
-        @can('view', App\Models\TimeEntry::class)
+        @can('view', App\Models\TimeSheet::class)
             <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">BATER PONTO</a>
         @endcan
     </div>

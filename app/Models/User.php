@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as AuthUser;
@@ -28,8 +27,8 @@ class User extends AuthUser
         'confirmation_code',
     ];
 
-    public function timeEntries(): HasMany
+    public function timeSheets(): HasMany
     {
-        return $this->hasMany(TimeEntry::class, 'tie_usr_id');
+        return $this->hasMany(TimeSheet::class, 'tie_usr_id');
     }
 }
