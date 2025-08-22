@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Holiday;
 use App\Models\TimeSheet;
 use App\Models\User;
 use Carbon\Carbon;
@@ -28,7 +29,10 @@ class CriarPontosCommand extends Command
      */
     public function handle()
     {
-        if(Carbon::now()->isWeekday()) {
+
+        $holiday = Holiday::where('date', Carbon::now()->format('Y-m-d'))->first();
+
+        if(Carbon::now()->isWeekday() && !$holiday) {
             $users = User::all();
 
             foreach ($users as $user) {
