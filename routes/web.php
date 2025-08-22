@@ -5,6 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Middleware\IsAdminMiddleware;
 use App\Http\Middleware\IsUserMiddleware;
 use App\Livewire\Auth\Login;
+use App\Livewire\ClockInClockOut;
 use App\Livewire\ConfirmationCode;
 use App\Livewire\ForgotPassword;
 use App\Livewire\HomeAdmin;
@@ -40,4 +41,5 @@ Route::middleware('auth')->group(function() {
     Route::middleware(IsAdminMiddleware::class)->get('/view_users', ViewUsers::class)->name('view_users');
     Route::delete('/delete_user', [UserController::class, 'delete'])->name('delete_user');
     Route::middleware(IsUserMiddleware::class)->get('/view_time_sheets', ViewDays::class)->name('view_days');
+    Route::middleware(IsUserMiddleware::class)->get('/clock_in_clock_out', ClockInClockOut::class)->name('clock_in_clock_out');
 });
