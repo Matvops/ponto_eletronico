@@ -24,7 +24,7 @@
         @endcan
         
         @can('view', App\Models\TimeSheet::class)
-            <a href="#" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">BATER PONTO</a>
+            <a href="{{ route('clock_in_clock_out') }}" class="text-white text-xl font-medium font-inter hover:text-gray-800 transition-all duration-100 ease">BATER PONTO</a>
         @endcan
     </div>
 

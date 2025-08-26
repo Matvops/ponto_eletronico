@@ -56,7 +56,10 @@ class ViewDays extends Component
         $sql = "
                 SELECT TO_CHAR(A.date, 'DD/MM/YYYY') as time_sheet_date, TO_CHAR(A.updated_at, 'HH24:MI:SS') AS entry,
                 TO_CHAR(B.updated_at, 'HH24:MI:SS') AS output,
-                (B.updated_at) - (A.updated_at + INTERVAL '10 hours') AS difference,
+                CASE
+                    WHEN ((B.updated_at) - (A.updated_at + INTERVAL '10 hours')) < INTERVAL '-10 hours' THEN '00:00:00'
+                    ELSE (B.updated_at) - (A.updated_at + INTERVAL '10 hours')
+                END AS difference,
                 CASE
                     WHEN A.updated_at + INTERVAL '10 hours' > B.updated_at THEN 'NEGATIVO' 
                     ELSE 'POSITIVO'

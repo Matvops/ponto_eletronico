@@ -1,8 +1,8 @@
 <div class="h-[100vh] flex">
     <x-left-menu />
 
-    <main class="mx-auto w-[60%] font-inter gap-12 my-24">
-        <header class="flex justify-between px-4 py-4 background-secondary-color mb-12 rounded-sm shadow-sm">
+    <main class=" w-full font-inter gap-12 my-24 ">
+        <header class="w-[60%] mx-auto flex justify-between px-4 py-4 background-secondary-color mb-12 rounded-sm shadow-sm">
             <div>
                 <select class="text-white cursor-pointer background-primary-color hover:bg-blue-800 focus:ring-1 focus:outline-none focus:ring-blue-50 font-medium rounded-lg text-sm px-2 py-2.5 text-center inline-flex items-center dark:bg-blue-500 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                     <option>Filtro</option>
@@ -23,7 +23,7 @@
             </div>
         </header>
 
-        <div class="background-secondary-color rounded-sm shadow-sm overflow-y-scroll max-h-700">
+        <div class="w-[60%] mx-auto background-secondary-color rounded-sm shadow-sm overflow-y-scroll max-h-700">
             <section class="p-0 m-0">
                 <ul class="p-0 m-0">
                     @foreach ($time_sheets as $time_sheet)
