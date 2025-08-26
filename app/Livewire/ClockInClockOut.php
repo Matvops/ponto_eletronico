@@ -14,12 +14,41 @@ class ClockInClockOut extends Component
     public $last_type_clock;
     public $status;
     public $actual_type_clock;
+    public $id;
 
     public function mount()
     {
-        /* $this->last_clock = TimeSheet::where('tis_usr_id', Auth::user()->id)->where('') */
+        $lastClock = $this->getLastClock();
+        $this->last_clock_time = $lastClock->updated_at; 
+        $this->last_type_clock = $lastClock->type; 
 
-        $sql = "SELECT TO_CHAR(updated_at, 'DD/MM/YYYY HH24:MI:SS') AS updated_at, A.type FROM time_sheet AS A
+        $actualClock = $this->getActualClock();
+        $this->status = $actualClock->status;
+        $this->actual_type_clock = strtolower($actualClock->type); 
+        $this->id = $actualClock->tis_id;
+
+        if(session()->has('error_punch_clock')) {
+            $this->dispatch('exibirModal',
+                "Erro!",
+                "error",
+                session('error_punch_clock'),
+                "center"
+            );
+        }
+
+        if(session()->has('success_punch_clock')) {
+            $this->dispatch('exibirModal',
+                "Sucesso!",
+                "success",
+                session('success_punch_clock'),
+                "center"
+            );
+        }
+    }
+
+    private function getLastClock()
+    {
+         $sql = "SELECT TO_CHAR(updated_at, 'DD/MM/YYYY HH24:MI:SS') AS updated_at, A.type FROM time_sheet AS A
                         WHERE tis_usr_id = ?
                         AND TO_CHAR(updated_at, 'HH24:MI:SS') != '00:00:00'
                         ORDER BY A.updated_at DESC
@@ -27,9 +56,20 @@ class ClockInClockOut extends Component
         
         $last_clock = DB::select($sql, [Auth::user()->usr_id]);
 
-        $this->last_clock_time = $last_clock[0]->updated_at; 
-        $this->last_type_clock = $last_clock[0]->type; 
+        if(!$last_clock) {
+            $sql= "SELECT TO_CHAR(updated_at, 'DD/MM/YYYY HH24:MI:SS') AS updated_at, A.type FROM time_sheet AS A
+                    WHERE tis_usr_id = ?
+                    ORDER BY date, type DESC
+                    limit 1";
 
+            $last_clock = DB::select($sql, [Auth::user()->usr_id]);
+        }
+
+        return $last_clock[0];
+    }
+
+    private function getActualClock()
+    {
         $sql = "SELECT tis_id, A.type, updated_at,
                     CASE 
                         WHEN type = 'ENTRADA' AND (EXTRACT(HOUR FROM NOW()) > 8 OR EXTRACT(HOUR FROM NOW()) = 00) THEN 'atrasado'
@@ -43,10 +83,21 @@ class ClockInClockOut extends Component
                 limit 1";
 
         $actual_clock = DB::select($sql, [Auth::user()->usr_id]);
+        
+        
 
-        $this->status = $actual_clock[0]->status;
-        $this->actual_type_clock = strtolower($actual_clock[0]->type); 
+        return $actual_clock[0] ?? $this->getFakeClock();
     }
+
+    private function getFakeClock()
+    {
+        return new class {
+            public $status = null;
+            public $type = 'entrada';
+            public $tis_id = 0;
+        };
+    }
+
 
     public function render()
     {
