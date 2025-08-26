@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\TimeSheet;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
 class ClockInClockOut extends Component
@@ -99,6 +100,7 @@ class ClockInClockOut extends Component
     }
 
 
+    #[Title('Bater ponto')]
     public function render()
     {
         return view('livewire.clock-in-clock-out');
