@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TimeSheetController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\IsAdminMiddleware;
 use App\Http\Middleware\IsUserMiddleware;
@@ -42,4 +43,5 @@ Route::middleware('auth')->group(function() {
     Route::delete('/delete_user', [UserController::class, 'delete'])->name('delete_user');
     Route::middleware(IsUserMiddleware::class)->get('/view_time_sheets', ViewDays::class)->name('view_days');
     Route::middleware(IsUserMiddleware::class)->get('/clock_in_clock_out', ClockInClockOut::class)->name('clock_in_clock_out');
+    Route::middleware(IsUserMiddleware::class)->post('/punch_clock', [TimeSheetController::class, 'punchClock'])->name('punch_clock');
 });
