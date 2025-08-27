@@ -1,6 +1,6 @@
 <div class="flex h-[100vh]">
     <x-left-menu />
-    <div class="flex flex-col items-center gap-48">
+    <div class="flex flex-col items-center gap-48 w-full">
         <h1 class="font-semibold text-4xl font-inter text-center tracking-wider mt-24">Sobre</h1>
 
         <p class="font-inter font-medium text-xl tracking-wide px-24 text-left">Este projeto é um sistema de ponto eletrônico feito com Laravel e Livewire, com o objetivo de exercitar autenticação personalizada, 
