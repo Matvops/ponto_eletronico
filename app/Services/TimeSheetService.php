@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TimeSheetStatus;
 use App\Models\TimeSheet;
 use App\Utils\Response;
 use Carbon\Carbon;
@@ -37,7 +38,7 @@ class TimeSheetService {
     }
 
 
-    public function calculateTimeBalance(): Response
+    public function calculateTimeBalance($id = null): Response
     {
         try {
             $sql = "SELECT 
@@ -51,19 +52,21 @@ class TimeSheetService {
                 AND B.tis_usr_id = ?
                 WHERE A.type = 'ENTRADA' 
                 AND B.type = 'SAIDA'
-                AND A.status = 'ATIVO'
-                AND B.status = 'ATIVO'
+                AND A.status = ?
+                AND B.status = ?
             ";
 
             $differences = DB::select($sql, [
-                Auth::user()->usr_id,
-                Auth::user()->usr_id
+                $id ?? Auth::user()->usr_id,
+                $id ?? Auth::user()->usr_id,
+                TimeSheetStatus::ATIVO->value,
+                TimeSheetStatus::ATIVO->value
             ]);
 
             $dados = $this->calculateHoursIfExists($differences);
             
             return Response::getResponse(true, data: $dados);
-        } catch(Exception $e) {
+        } catch(Exception) {
             return Response::getResponse(false, "Erro ao consultar saldo de horas! Entre em contato com o suporte.");
         }
     }
@@ -81,12 +84,17 @@ class TimeSheetService {
         $seconds = 0;
         $minutes = 0;
         $hours = 0;
+
         foreach ($timesBalances as $timeBalance) {
             $difference = $timeBalance->value;
             $seconds = $this->calculate($seconds, $this->extractTimeUnit($difference, 'SECONDS'));
             $minutes = $this->calculate($minutes, $this->extractTimeUnit($difference, 'MINUTES'));
             $hours = $this->calculate($hours, $this->extractTimeUnit($difference, 'HOURS'));
         }
+
+        $seconds = $this->formatTime($seconds);
+        $minutes = $this->formatTime($minutes);
+        $hours = $this->formatTime($hours);
 
         return [
             'timeBalance' => $hours . ':' . $minutes . ':' . $seconds,
@@ -116,8 +124,12 @@ class TimeSheetService {
     
     private function calculate(int $actual, int $difference): int
     {
-        
         return $actual + $difference;
+    }
+
+    private function formatTime($time): string
+    {
+        return $time == 0 ? '00' : strval($time) ; 
     }
 
     private function timeBalanceIsPositive($time): bool
