@@ -44,6 +44,15 @@ class Login extends Component
                 "center"
             );
         }
+
+        if(session()->has('error_calculate_time_balance')) {
+            $this->dispatch('exibirModal', 
+                "Erro",
+                "error",
+                session('error_calculate_time_balance'),
+                "center"
+            );
+        }
     }
 
     #[Title('Login')]
