@@ -17,7 +17,7 @@ class UserPolicy
      */
     public function view(User $manipulatedUser, User $userActing): bool
     {
-        return false;
+        return $manipulatedUser->usr_id === $userActing || $userActing->role == 'ADMIN';
     }
 
     /**

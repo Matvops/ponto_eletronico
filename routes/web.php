@@ -5,6 +5,7 @@ use App\Http\Controllers\TimeSheetController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\IsAdminMiddleware;
 use App\Http\Middleware\IsUserMiddleware;
+use App\Livewire\AdminUpdateProfile;
 use App\Livewire\Auth\Login;
 use App\Livewire\ClockInClockOut;
 use App\Livewire\ConfirmationCode;
@@ -44,4 +45,6 @@ Route::middleware('auth')->group(function() {
     Route::middleware(IsUserMiddleware::class)->get('/view_time_sheets', ViewDays::class)->name('view_days');
     Route::middleware(IsUserMiddleware::class)->get('/clock_in_clock_out', ClockInClockOut::class)->name('clock_in_clock_out');
     Route::middleware(IsUserMiddleware::class)->post('/punch_clock', [TimeSheetController::class, 'punchClock'])->name('punch_clock');
+    Route::middleware(IsAdminMiddleware::class)->get('/admin_update/{id}', AdminUpdateProfile::class)->name('admin_update_profile');
+    Route::middleware(IsAdminMiddleware::class)->post('/admin_update', [UserController::class, 'updateUserByAdminView'])->name('update_profile_by_admin');
 });

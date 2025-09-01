@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\DeleteUserRequest;
 use App\Http\Requests\RegisterNewUserRequest;
 use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\UpdateUserByAdminViewRequest;
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -82,5 +83,22 @@ class UserController extends Controller
         }
 
         return back()->with('success_delete_user', $response->getMessage());
+    }
+
+    public function updateUserByAdminView(UpdateUserByAdminViewRequest $request) {
+
+        $bodyParams = [
+            'usr_id' => $request->input('id'),
+            'username' => $request->input('username'),
+            'email' => $request->input('email'),
+            'reset_time_balance' => filter_var($request->input('reset_time_balance'), FILTER_VALIDATE_BOOL)
+        ];
+
+        $response = $this->service->updateByAdminView($bodyParams);
+
+        if(!$response->getStatus())
+            return redirect()->route('view_users')->with('error_update_user', $response->getMessage());
+
+        return redirect()->route('view_users')->with('success_update_user', $response->getMessage());
     }
 }
