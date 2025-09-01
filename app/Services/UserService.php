@@ -19,23 +19,34 @@ class UserService {
 
             DB::beginTransaction();
 
-            $userExists = User::where('email', $userData['email'])->exists();
+            $emailExists = User::withTrashed()
+                                ->where('email', $userData['email'])
+                                ->exists();
 
             $user = User::where('email', Auth::user()->email)->first();
 
-            if($userData['email'] !=  $user->email && $userExists) throw new Exception("Email inválido");
+            if($this->invalidEmail($userData['email'], $user->email, $emailExists)) throw new Exception("Email inválido");
 
-            if(!password_verify($userData['password'], $user->password)) throw new Exception("Senha incorreta!");
-
+            if($this->invalidPassword($userData['password'], $user->password)) throw new Exception("Senha incorreta!");
+            
             $response = $this->update($user, $userData);
 
             DB::commit();
             return Response::getResponse(true, $response['message'], $response['emailAlterado']);
         } catch (Exception $e) {
             DB::rollBack();
-            error_log($e->getMessage());
             return Response::getResponse(false, $e->getMessage());
         }
+    }
+
+    private function invalidEmail($newEmail, $actualEmail, $emailExists): bool
+    {
+        return $newEmail != $actualEmail && $emailExists;
+    }
+
+    private function invalidPassword($newPassword, $actualPassword): bool
+    {
+        return !password_verify($newPassword, $actualPassword);
     }
 
     private function update(User $user, array $newData)
@@ -121,4 +132,31 @@ class UserService {
             return Response::getResponse(false, "Erro ao deletar usuário");
         }
     }
+
+    public function updateByAdminView($userData) 
+    {
+        try {
+            DB::beginTransaction();
+
+            $emailExists = User::withTrashed()
+                                ->where('email', $userData['email'])
+                                ->exists();
+
+            $user = User::where('usr_id', intval($userData['usr_id']))->first();
+
+            if($this->invalidEmail($userData['email'], $user->email, $emailExists)) throw new Exception("Email inválido");
+            
+            $this->update($user, $userData);
+            
+            if($userData['reset_time_balance']) 
+                TimeSheetService::updateTimeSheetStatus($user->usr_id);
+            
+            DB::commit();
+            return Response::getResponse(true, "Dados atualizados com sucesso!");
+        } catch(Exception $e) {
+            DB::rollBack();
+            return Response::getResponse(false, $e->getMessage());
+        }
+    }
+
 }
