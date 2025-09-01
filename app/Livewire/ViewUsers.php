@@ -37,6 +37,24 @@ class ViewUsers extends Component
                 "center"
             );
         }
+
+        if(session()->has('error_update_user')) {
+            $this->dispatch('exibirModal',
+                "Erro!",
+                "error",
+                session('error_update_user'),
+                "center"
+            );
+        }
+
+        if(session()->has('success_update_user')) {
+            $this->dispatch('exibirModal',
+                "Sucesso!",
+                "success",
+                session('success_update_user'),
+                "center"
+            );
+        }
     }
 
     public function asc()
