@@ -33,11 +33,11 @@ class CriarPontosCommand extends Command
         $holiday = Holiday::where('date', Carbon::now()->format('Y-m-d'))->first();
 
         if(Carbon::now()->isWeekday() && !$holiday) {
-            $users = User::all();
+            $users = User::where('role', '!=', 'ADMIN')->get();
 
             foreach ($users as $user) {
-                $this->createTimeSheet('ENTRADA', $user->usr_id);    
-                $this->createTimeSheet('SAIDA', $user->usr_id);    
+                $this->createTimeSheet('ENTRADA', $user['usr_id']);    
+                $this->createTimeSheet('SAIDA', $user['usr_id']);    
             }
         }
     }
