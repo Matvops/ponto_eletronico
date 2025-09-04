@@ -37,7 +37,7 @@ class HomeUser extends Component
             );
         }
 
-        $service = new TimeSheetService;
+        $service = app(TimeSheetService::class);
         $response = $service->calculateTimeBalance(); 
 
         if(!$response->getStatus()) {
