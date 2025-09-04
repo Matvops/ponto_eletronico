@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\TimeSheetStatus;
 use App\Models\TimeSheet;
+use App\Repositories\TimeSheetRepository;
 use App\Utils\Response;
 use Carbon\Carbon;
 use Exception;
@@ -12,6 +13,13 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
 class TimeSheetService {
+
+    private TimeSheetRepository $timeSheetRepository;
+
+    public function __construct(TimeSheetRepository $timeSheetRepository)
+    {
+        $this->timeSheetRepository = $timeSheetRepository;
+    }
 
 
     public function punchClock($tis_id): Response
@@ -41,27 +49,8 @@ class TimeSheetService {
     public function calculateTimeBalance($id = null): Response
     {
         try {
-            $sql = "SELECT 
-                CASE
-                    WHEN ((B.updated_at) - (A.updated_at + INTERVAL '10 hours')) < INTERVAL '-10 hours' THEN '00:00:00'
-                    ELSE (B.updated_at) - (A.updated_at + INTERVAL '10 hours')
-                END AS value
-                FROM time_sheet A
-                LEFT JOIN time_sheet B ON A.date = B.date 
-                AND A.tis_usr_id = ?
-                AND B.tis_usr_id = ?
-                WHERE A.type = 'ENTRADA' 
-                AND B.type = 'SAIDA'
-                AND A.status = ?
-                AND B.status = ?
-            ";
-
-            $differences = DB::select($sql, [
-                $id ?? Auth::user()->usr_id,
-                $id ?? Auth::user()->usr_id,
-                TimeSheetStatus::ATIVO->value,
-                TimeSheetStatus::ATIVO->value
-            ]);
+           
+            $differences = $this->timeSheetRepository->getTimesBalance($id);
 
             $dados = $this->calculateHoursIfExists($differences);
             
