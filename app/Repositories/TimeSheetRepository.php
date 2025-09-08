@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Enums\TimeSheetStatus;
+use App\Models\TimeSheet;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -32,5 +33,10 @@ class TimeSheetRepository
                 TimeSheetStatus::ATIVO->value,
                 TimeSheetStatus::ATIVO->value
             ]);
+    }
+
+    public function getTimeSheetByTisId($tis_id)
+    {
+        return TimeSheet::where('tis_id', $tis_id)->first();
     }
 }
