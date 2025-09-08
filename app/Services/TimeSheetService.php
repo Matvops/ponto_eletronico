@@ -29,8 +29,8 @@ class TimeSheetService {
             DB::beginTransaction();
 
             $tis_id = Crypt::decrypt($tis_id);
-
-            $clock = TimeSheet::where('tis_id', $tis_id)->first();
+            
+            $clock = $this->timeSheetRepository->getTimeSheetByTisId($tis_id);
             
             if(!$clock) throw new Exception("Erro ao salvar registro de ponto");
 
