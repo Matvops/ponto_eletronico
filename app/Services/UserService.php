@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Mail\VerifyEmail;
 use App\Models\User;
+use App\Repositories\UserRepository;
 use App\Utils\Response;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -13,17 +14,24 @@ use Illuminate\Support\Str;
 
 class UserService {
 
+    private UserRepository $userRepository;
+    private EmailService $emailService;
+
+    public function __construct(UserRepository $userRepository, EmailService $emailService)
+    {
+        $this->userRepository = $userRepository;
+        $this->emailService = $emailService;
+    }
+
     public function updateUserData(array $userData): Response
     {
         try {
 
             DB::beginTransaction();
 
-            $emailExists = User::withTrashed()
-                                ->where('email', $userData['email'])
-                                ->exists();
-
-            $user = User::where('email', Auth::user()->email)->first();
+            $emailExists = $this->userRepository->emailExists($userData['email']);
+            
+            $user = $this->userRepository->getByEmail(Auth::user()->email);
 
             if($this->invalidEmail($userData['email'], $user->email, $emailExists)) throw new Exception("Email inválido");
 
@@ -63,8 +71,8 @@ class UserService {
             $path = '/verify_email';
             $pathParams = ['token' => $user->token];
 
-            $emailService = new EmailService($user, new VerifyEmail($user->username));
-            $emailService->sendWithPathParams($path, $pathParams);
+            $this->emailService->setMailStructure($user->email, new VerifyEmail($user->username));
+            $this->emailService->sendWithPathParams($path, $pathParams);
 
             $message = "Email de confirmação enviado! Verifique sua caixa de mensagens.";
             $emailAlterado = true;
@@ -100,8 +108,9 @@ class UserService {
             $path = '/verify_email';
             $pathParams = ['token' => $user->token];
 
-            $emailService = new EmailService($user, new VerifyEmail($user->username));
-            $emailService->sendWithPathParams($path, $pathParams);
+            $this->emailService->setMailStructure($user->email, new VerifyEmail($user->username));
+            $this->emailService->sendWithPathParams($path, $pathParams);
+
             $message = "Email de confirmação enviado para $user->email! Verifique a caixa de mensagens.";
 
             DB::commit();
