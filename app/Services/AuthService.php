@@ -15,6 +15,13 @@ use Illuminate\Support\Str;
 
 class AuthService {
     
+    private EmailService $emailService;
+
+    public function __construct(EmailService $emailService)
+    {
+        $this->emailService = $emailService;
+    }
+
     public function authentication($dados): Response
     {
         try {
@@ -61,8 +68,8 @@ class AuthService {
             $user->confirmation_code = $this->generateRandomConfirmationCode();
             $user->save();    
 
-            $emailService = new EmailService($user, new ConfirmationCode($user->confirmation_code, $user->username));
-            $emailService->send();
+            $this->emailService->setMailStructure($user->email, new ConfirmationCode($user->confirmation_code, $user->username));
+            $this->emailService->send();
 
             DB::commit();
             return Response::getResponse(true, data: $user->email);
