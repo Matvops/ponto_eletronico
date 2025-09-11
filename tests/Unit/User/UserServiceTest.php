@@ -5,8 +5,10 @@ namespace Tests\Unit\User;
 use App\Factories\UserFactory;
 use App\Mail\VerifyEmail;
 use App\Models\User;
+use App\Repositories\TimeSheetRepository;
 use App\Repositories\UserRepository;
 use App\Services\EmailService;
+use App\Services\TimeSheetService;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +26,7 @@ class UserServiceTest extends TestCase {
 
     private UserService $userService;
     private UserRepository&Stub $userRepositoryStub;
+    private TimeSheetRepository&Stub $timeSheetRepositoryMock;
     private EmailService&MockInterface $emailServiceMock;
     private $user;
 
@@ -31,7 +34,8 @@ class UserServiceTest extends TestCase {
     {
         $this->userRepositoryStub = $this->createStub(UserRepository::class);
         $this->emailServiceMock = Mockery::mock(EmailService::class);
-        $this->userService = new UserService($this->userRepositoryStub, $this->emailServiceMock);
+        $this->timeSheetRepositoryMock = $this->createStub(TimeSheetRepository::class);
+        $this->userService = new UserService($this->userRepositoryStub, $this->emailServiceMock, $this->timeSheetRepositoryMock);
 
         $this->user = (object)[
                                 'usr_id' => 4,
@@ -353,6 +357,238 @@ class UserServiceTest extends TestCase {
         $this->assertFalse($response->getStatus());
         $this->assertSame("Erro ao deletar usuário", $response->getMessage());
     }
+
+    public function test_update_user_by_admin_view_with_same_email_successfully(): void
+    {
+        $userData = [
+            'username' => 'USER',
+            'email' => 'user1@gmail.com',
+            'usr_id' => '4',
+            'reset_time_balance' => null
+        ];
+
+        $userMock = Mockery::mock(User::class);
+
+        $userMock->shouldReceive('save')
+                    ->once()
+                    ->andReturnSelf();
+
+        $this->makeGetAttributeUser('email', $userMock, $this->user->email);
+
+        $this->makeSetAttributeUser('username', $userMock, $userData['username']);
+        
+        $this->userRepositoryStub->method('emailExists')
+                                    ->with($userData['email'])
+                                    ->willReturn(true);
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersByUsrId')
+                                    ->with($userData['usr_id'])
+                                    ->willReturn($userMock);
+                    
+        $response = $this->userService->updateByAdminView($userData); 
+
+        $this->assertTrue($response->getStatus());
+        $this->assertSame("Dados atualizados com sucesso!", $response->getMessage());
+    }
+
+    public function test_update_user_by_admin_view_with_different_email_successfully(): void
+    {
+
+        $token = 'abcdefg';
+        $strMock = Mockery::mock("alias:" . Str::class);
+        $strMock->shouldReceive('random')
+                    ->with(64)
+                    ->andReturn($token);
+
+        $userData = [
+            'username' => 'USER',
+            'email' => 'user@gmail.com',
+            'usr_id' => '4',
+            'reset_time_balance' => null
+        ];
+
+        $userMock = Mockery::mock(User::class);
+
+        $this->userRepositoryStub->method('emailExists')
+                                    ->with($userData['email'])
+                                    ->willReturn(false);
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersByUsrId')
+                                    ->with($userData['usr_id'])
+                                    ->willReturn($userMock);
+
+        $this->makeGetAttributeUser('email', $userMock, $this->user->email, $this->user->email);
+        $this->makeGetAttributeUser('token', $userMock, $token);
+        $this->makeGetAttributeUser('username', $userMock, $userData['username']);
+
+        $this->makeSetAttributeUser('token', $userMock, $token);
+        $this->makeSetAttributeUser('email', $userMock, $userData['email']);
+        $this->makeSetAttributeUser('email_verified_at', $userMock,  null);
+        $this->makeSetAttributeUser('username', $userMock, $userData['username']);
+
+        $userMock->shouldReceive('save')
+                    ->once()
+                    ->andReturnSelf();
+
+        $this->emailServiceMock->shouldReceive('setMailStructure')
+                                ->withAnyArgs()
+                                ->andReturnSelf();
+        
+        $this->emailServiceMock->shouldReceive('sendWithPathParams')
+                                ->withAnyArgs()
+                                ->andReturnSelf();
+                    
+        $response = $this->userService->updateByAdminView($userData); 
+
+        $this->assertTrue($response->getStatus());
+        $this->assertSame("Dados atualizados com sucesso!", $response->getMessage());
+    }
+
+    public function test_update_user_by_admin_view_with_different_email_and_reset_time_balance_successfully(): void
+    {
+
+        $token = 'abcdefg';
+        $strMock = Mockery::mock("alias:" . Str::class);
+        $strMock->shouldReceive('random')
+                    ->with(64)
+                    ->andReturn($token);
+
+        $userData = [
+            'username' => 'USER',
+            'email' => 'user@gmail.com',
+            'usr_id' => 4,
+            'reset_time_balance' => true
+        ];
+
+        $userMock = Mockery::mock(User::class);
+
+        $this->userRepositoryStub->method('emailExists')
+                                    ->with($userData['email'])
+                                    ->willReturn(false);
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersByUsrId')
+                                    ->with($userData['usr_id'])
+                                    ->willReturn($userMock);
+
+        $this->makeGetAttributeUser('email', $userMock, $this->user->email, $this->user->email);
+        $this->makeGetAttributeUser('token', $userMock, $token);
+        $this->makeGetAttributeUser('username', $userMock, $userData['username']);
+        $this->makeGetAttributeUser('usr_id', $userMock, $userData['usr_id']);
+
+        $this->makeSetAttributeUser('token', $userMock, $token);
+        $this->makeSetAttributeUser('email', $userMock, $userData['email']);
+        $this->makeSetAttributeUser('email_verified_at', $userMock,  null);
+        $this->makeSetAttributeUser('username', $userMock, $userData['username']);
+
+        $userMock->shouldReceive('save')
+                    ->once()
+                    ->andReturnSelf();
+
+        $this->emailServiceMock->shouldReceive('setMailStructure')
+                                ->withAnyArgs()
+                                ->andReturnSelf();
+        
+        $this->emailServiceMock->shouldReceive('sendWithPathParams')
+                                ->withAnyArgs()
+                                ->andReturnSelf();
+
+        
+        $this->timeSheetRepositoryMock->method('resetTimeBalanceByUsrId')
+                                ->willReturnSelf();
+                    
+        $response = $this->userService->updateByAdminView($userData); 
+
+        $this->assertTrue($response->getStatus());
+        $this->assertSame("Dados atualizados com sucesso!", $response->getMessage());
+    }
+
+    public function test_update_user_by_admin_view_with_error_invalid_email(): void
+    {
+
+        $token = 'abcdefg';
+        $strMock = Mockery::mock("alias:" . Str::class);
+        $strMock->shouldReceive('random')
+                    ->with(64)
+                    ->andReturn($token);
+
+        $userData = [
+            'username' => 'USER',
+            'email' => 'user@gmail.com',
+            'usr_id' => 4,
+            'reset_time_balance' => true
+        ];
+
+        $userMock = Mockery::mock(User::class);
+        
+        $this->makeGetAttributeUser('email', $userMock, $this->user->email);
+
+        $this->userRepositoryStub->method('emailExists')
+                                    ->with($userData['email'])
+                                    ->willReturn(true);
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersByUsrId')
+                                    ->with($userData['usr_id'])
+                                    ->willReturn($userMock);
+
+        $response = $this->userService->updateByAdminView($userData); 
+
+        $this->assertFalse($response->getStatus());
+        $this->assertSame("Email inválido", $response->getMessage());
+    }
+
+    public function test_update_user_by_admin_view_with_error_to_send_email(): void
+    {
+
+         $token = 'abcdefg';
+        $strMock = Mockery::mock("alias:" . Str::class);
+        $strMock->shouldReceive('random')
+                    ->with(64)
+                    ->andReturn($token);
+
+        $userData = [
+            'username' => 'USER',
+            'email' => 'user@gmail.com',
+            'usr_id' => '4',
+            'reset_time_balance' => null
+        ];
+
+        $userMock = Mockery::mock(User::class);
+
+        $this->userRepositoryStub->method('emailExists')
+                                    ->with($userData['email'])
+                                    ->willReturn(false);
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersByUsrId')
+                                    ->with($userData['usr_id'])
+                                    ->willReturn($userMock);
+
+        $this->makeGetAttributeUser('email', $userMock, $this->user->email, $this->user->email);
+        $this->makeGetAttributeUser('token', $userMock, $token);
+        $this->makeGetAttributeUser('username', $userMock, $userData['username']);
+
+        $this->makeSetAttributeUser('token', $userMock, $token);
+        $this->makeSetAttributeUser('email', $userMock, $userData['email']);
+        $this->makeSetAttributeUser('email_verified_at', $userMock,  null);
+        $this->makeSetAttributeUser('username', $userMock, $userData['username']);
+
+        $userMock->shouldReceive('save')
+                    ->once()
+                    ->andReturnSelf();
+
+        $this->emailServiceMock->shouldReceive('setMailStructure')
+                                ->withAnyArgs()
+                                ->andReturnSelf();
+        
+        $this->emailServiceMock->shouldReceive('sendWithPathParams')
+                                ->withAnyArgs()
+                                ->andThrow(Exception::class, 'Falha ao enviar email');
+                    
+        $response = $this->userService->updateByAdminView($userData); 
+
+        $this->assertFalse($response->getStatus());
+        $this->assertSame('Falha ao enviar email', $response->getMessage());
+    }
+
 
     private function makeGetAttributeUser(string $attribute, User&MockInterface $modelMock, ...$values): void
     {
