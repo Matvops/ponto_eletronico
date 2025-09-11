@@ -125,11 +125,4 @@ class TimeSheetService {
     {
         return $time >= 0;
     }
-
-    public static function updateTimeSheetStatus(int $usr_id){
-
-        TimeSheet::where('tis_usr_id', $usr_id)
-                    ->where('status', TimeSheetStatus::ATIVO)
-                    ->update(['status' => TimeSheetStatus::INATIVO]);
-    }
 }
