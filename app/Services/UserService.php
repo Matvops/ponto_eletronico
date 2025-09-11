@@ -121,9 +121,8 @@ class UserService {
         try {
             DB::beginTransaction();
 
-            $user = User::where('usr_id', Crypt::decrypt($id))
-                ->whereNull('deleted_at')
-                ->first();
+            $idDecrypted = Crypt::decrypt($id);
+            $user = $this->userRepository->getOnlyActiveUsersByUsrId($idDecrypted);
 
             if(!$user) throw new Exception();
 
@@ -132,6 +131,7 @@ class UserService {
             DB::commit();
             return Response::getResponse(true, "Usuário $user->username deletado");
         } catch(Exception $e) {
+            error_log($e->getMessage());
             DB::rollBack();
             return Response::getResponse(false, "Erro ao deletar usuário");
         }
