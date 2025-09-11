@@ -10,6 +10,7 @@ use App\Services\EmailService;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Mockery;
@@ -318,7 +319,40 @@ class UserServiceTest extends TestCase {
         $this->assertSame("Falha ao enviar email", $response->getMessage());
     }
 
+    public function test_delete_user_successfully(): void
+    {
+        Crypt::expects('decrypt')->andReturn(4);
+        
+        $userMock = Mockery::mock(User::class);
+        
+        $this->makeGetAttributeUser('username', $userMock, $this->user->username);
+        
+        $userMock->shouldReceive('delete')
+            ->andReturnSelf();
 
+        $this->userRepositoryStub->method('getOnlyActiveUsersByUsrId')
+                                    ->willReturn($userMock);
+
+        $response = $this->userService->delete('EncryptedId');
+
+        $this->assertTrue($response->getStatus());
+        $this->assertSame("Usuário {$this->user->username} deletado", $response->getMessage());
+    }
+
+    public function test_delete_with_invalid_usr_id(): void
+    {
+        Crypt::expects('decrypt')->andReturn(4);
+        
+        $userMock = Mockery::mock(User::class);
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersByUsrId')
+                                    ->willReturn(null);
+
+        $response = $this->userService->delete('EncryptedId');
+
+        $this->assertFalse($response->getStatus());
+        $this->assertSame("Erro ao deletar usuário", $response->getMessage());
+    }
 
     private function makeGetAttributeUser(string $attribute, User&MockInterface $modelMock, ...$values): void
     {
