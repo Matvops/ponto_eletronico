@@ -56,6 +56,12 @@ class UserServiceTest extends TestCase {
         Auth::expects('user')->andReturn($this->user);
     }
 
+
+    protected function tearDown(): void
+    {
+        Mockery::close();   
+    }
+    
     public function test_update_user_data_with_same_email_successfully(): void
     {
         $userData = [
