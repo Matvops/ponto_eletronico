@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Services\EmailService;
 use App\Services\UserService;
-use App\Utils\Functions;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

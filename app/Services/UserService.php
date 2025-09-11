@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Factories\UserFactory;
 use App\Mail\VerifyEmail;
 use App\Models\User;
 use App\Repositories\UserRepository;
@@ -93,16 +94,10 @@ class UserService {
     public function register(array $userData): Response
     {
         try {
+
             DB::beginTransaction();
 
-            $user = new User();
-            $user->username = $userData['username'];
-            $user->email = $userData['email'];
-            $user->password = bcrypt($userData['password']);
-            $user->role = strtoupper($userData['role']);
-            $user->email_verified_at = null;
-            $user->token = Str::random(64);
-            $user->confirmation_code = null;
+            $user = UserFactory::create($userData);
             $user->save();
 
             $path = '/verify_email';
