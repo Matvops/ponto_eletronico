@@ -19,7 +19,11 @@ class EmailService {
 
     public function send(): void
     {
-        $response =  Mail::to($this->email)->send($this->mailable);
+
+        $response = false;
+        if($this->email && $this->mailable) {
+            $response =  Mail::to($this->email)->send($this->mailable);
+        }
 
         if(!$response) throw new Exception("Falha ao enviar email");
     }
