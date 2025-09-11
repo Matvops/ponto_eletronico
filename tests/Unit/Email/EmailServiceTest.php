@@ -56,4 +56,43 @@ final class EmailServiceTest extends TestCase {
         $this->emailService->setMailStructure($this->email, $this->mailable);
         $this->emailService->send();
     }
+
+
+     public function test_send_with_path_params_email_with_error_invalid_email(): void
+    {
+        
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Falha ao enviar email');
+
+        $path = '/verifyEmail';
+        $params = ['param1' => 'valuee'];
+
+        $this->emailService->sendWithPathParams($path, $params);
+    }
+
+    public function test_send_with_path_params_email_with_error_to_send_email(): void
+    {
+        
+        $pendingMailMock = Mockery::mock(PendingMail::class);
+
+        $pendingMailMock->shouldReceive('send')
+                            ->with($this->mailable)
+                            ->andReturnNull();
+        Mail::expects('to')
+                ->with($this->email)
+                ->andReturn($pendingMailMock);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Falha ao enviar email');
+
+        $path = '/verifyEmail';
+        $params = ['param1' => 'valuee'];
+
+        $this->mailable->shouldReceive('setLink')
+                        ->withAnyArgs()
+                        ->andReturnSelf();
+
+        $this->emailService->setMailStructure($this->email, $this->mailable);
+        $this->emailService->sendWithPathParams($path, $params);
+    }
 }
