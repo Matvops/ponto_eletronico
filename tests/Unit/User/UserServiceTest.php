@@ -2,16 +2,16 @@
 
 namespace Tests\Unit\User;
 
+use App\Factories\UserFactory;
 use App\Mail\VerifyEmail;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Services\EmailService;
 use App\Services\UserService;
+use App\Utils\Functions;
 use Exception;
-use Illuminate\Mail\PendingMail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Mockery;
 use Mockery\MockInterface;
@@ -247,6 +247,79 @@ class UserServiceTest extends TestCase {
         $this->assertFalse($response->getStatus());
         $this->assertSame('Falha ao enviar email', $response->getMessage());
     }
+
+    public function test_register_new_user_successfully(): void
+    {
+
+        $userMock = Mockery::mock(User::class);
+        $userMock->shouldReceive('save')
+                    ->andReturnSelf();
+
+        $userFactoryMock = Mockery::mock('alias:' . UserFactory::class);
+        $userFactoryMock->shouldReceive('create')
+                            ->andReturn($userMock);
+
+        $userData = [
+            'username' => 'USER',
+            'email' => 'user@example.com'
+        ];
+        $this->makeGetAttributeUser('username', $userMock, $userData['username']);
+        $this->makeGetAttributeUser('email', $userMock, $userData['email'], $userData['email']);
+
+        $token = 'abcdefg';
+        $this->makeGetAttributeUser('token', $userMock, $token);
+
+
+        $this->emailServiceMock->shouldReceive('setMailStructure')
+                                    ->withAnyArgs()
+                                    ->andReturnSelf();
+        
+        $this->emailServiceMock->shouldReceive('sendWithPathParams')
+                            ->withAnyArgs()
+                            ->andReturnSelf();
+
+        $response = $this->userService->register($userData);
+        
+        $this->assertTrue($response->getStatus());
+        $this->assertSame("Email de confirmação enviado para {$userData['email']}! Verifique a caixa de mensagens.", $response->getMessage());
+    }
+
+    public function test_register_new_user_with_error_to_send_email(): void
+    {
+
+        $userMock = Mockery::mock(User::class);
+        $userMock->shouldReceive('save')
+                    ->andReturnSelf();
+
+        $userFactoryMock = Mockery::mock('alias:' . UserFactory::class);
+        $userFactoryMock->shouldReceive('create')
+                            ->andReturn($userMock);
+
+        $userData = [
+            'username' => 'USER',
+            'email' => 'user@example.com'
+        ];
+        $this->makeGetAttributeUser('username', $userMock, $userData['username']);
+        $this->makeGetAttributeUser('email', $userMock, $userData['email'], $userData['email']);
+
+        $token = 'abcdefg';
+        $this->makeGetAttributeUser('token', $userMock, $token);
+
+        $this->emailServiceMock->shouldReceive('setMailStructure')
+                                    ->withAnyArgs()
+                                    ->andReturnSelf();
+        
+        $this->emailServiceMock->shouldReceive('sendWithPathParams')
+                            ->withAnyArgs()
+                            ->andThrow(Exception::class, "Falha ao enviar email");
+
+        $response = $this->userService->register($userData);
+        
+        $this->assertFalse($response->getStatus());
+        $this->assertSame("Falha ao enviar email", $response->getMessage());
+    }
+
+
 
     private function makeGetAttributeUser(string $attribute, User&MockInterface $modelMock, ...$values): void
     {
