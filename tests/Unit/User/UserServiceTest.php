@@ -53,7 +53,6 @@ class UserServiceTest extends TestCase {
 
         $dbMock = Mockery::mock('alias:' . DB::class);
         $dbMock->shouldIgnoreMissing();
-        Auth::expects('user')->andReturn($this->user);
     }
 
 
@@ -64,6 +63,7 @@ class UserServiceTest extends TestCase {
     
     public function test_update_user_data_with_same_email_successfully(): void
     {
+        Auth::expects('user')->andReturn($this->user);
         $userData = [
             'username' => 'USER',
             'email' => 'user1@gmail.com',
@@ -98,7 +98,7 @@ class UserServiceTest extends TestCase {
 
     public function test_update_user_data_with_different_email_successfully(): void
     {
-
+        Auth::expects('user')->andReturn($this->user);
         $token = 'abcdefg';
         $strMock = Mockery::mock("alias:" . Str::class);
         $strMock->shouldReceive('random')
@@ -153,6 +153,7 @@ class UserServiceTest extends TestCase {
 
     public function test_update_user_data_with_invalid_email(): void
     {
+        Auth::expects('user')->andReturn($this->user);
         $userData = [
             'username' => 'USER',
             'email' => 'user@gmail.com',
@@ -179,6 +180,7 @@ class UserServiceTest extends TestCase {
 
     public function test_update_user_data_with_invalid_password(): void
     {
+        Auth::expects('user')->andReturn($this->user);
         $userData = [
             'username' => 'USER',
             'email' => 'user1@gmail.com',
@@ -206,7 +208,7 @@ class UserServiceTest extends TestCase {
 
     public function test_update_user_data_with_error_to_send_email(): void
     {
-
+        Auth::expects('user')->andReturn($this->user);
         $token = 'abcdefg';
         $strMock = Mockery::mock("alias:" . Str::class);
         $strMock->shouldReceive('random')
