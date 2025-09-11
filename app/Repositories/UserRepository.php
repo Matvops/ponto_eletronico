@@ -20,4 +20,9 @@ class UserRepository {
                 ->where('email', $email)
                 ->first();
     }
+
+    public function getOnlyActiveUsersByUsrId($usr_id) 
+    {
+        return User::find($usr_id);
+    }
 }
