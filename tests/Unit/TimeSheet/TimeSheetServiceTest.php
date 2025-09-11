@@ -28,6 +28,11 @@ final class TimeSheetServiceTest extends TestCase
         $this->timeSheetService = new TimeSheetService($this->timeSheetRepositoryStub);
     }
 
+    protected function tearDown(): void
+    {
+        Mockery::close();
+    }
+
     public function test_calculate_time_balance_with_id()
     {
         $differences = json_decode(
