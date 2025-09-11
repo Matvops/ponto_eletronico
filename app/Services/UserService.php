@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Factories\UserFactory;
 use App\Mail\VerifyEmail;
 use App\Models\User;
+use App\Repositories\TimeSheetRepository;
 use App\Repositories\UserRepository;
 use App\Utils\Response;
 use Exception;
@@ -17,11 +18,13 @@ class UserService {
 
     private UserRepository $userRepository;
     private EmailService $emailService;
+    private TimeSheetRepository $timeSheetRepository;
 
-    public function __construct(UserRepository $userRepository, EmailService $emailService)
+    public function __construct(UserRepository $userRepository, EmailService $emailService, TimeSheetRepository $timeSheetRepository)
     {
         $this->userRepository = $userRepository;
         $this->emailService = $emailService;
+        $this->timeSheetRepository = $timeSheetRepository;
     }
 
     public function updateUserData(array $userData): Response
@@ -131,7 +134,6 @@ class UserService {
             DB::commit();
             return Response::getResponse(true, "Usuário $user->username deletado");
         } catch(Exception $e) {
-            error_log($e->getMessage());
             DB::rollBack();
             return Response::getResponse(false, "Erro ao deletar usuário");
         }
@@ -142,19 +144,17 @@ class UserService {
         try {
             DB::beginTransaction();
 
-            $emailExists = User::withTrashed()
-                                ->where('email', $userData['email'])
-                                ->exists();
+            $emailExists = $this->userRepository->emailExists($userData['email']);
 
-            $user = User::where('usr_id', intval($userData['usr_id']))->first();
+            $user = $this->userRepository->getOnlyActiveUsersByUsrId($userData['usr_id']);
 
             if($this->invalidEmail($userData['email'], $user->email, $emailExists)) throw new Exception("Email inválido");
             
             $this->update($user, $userData);
             
             if($userData['reset_time_balance']) 
-                TimeSheetService::updateTimeSheetStatus($user->usr_id);
-            
+                $this->timeSheetRepository->resetTimeBalanceByUsrId($user->usr_id);
+
             DB::commit();
             return Response::getResponse(true, "Dados atualizados com sucesso!");
         } catch(Exception $e) {
@@ -162,5 +162,4 @@ class UserService {
             return Response::getResponse(false, $e->getMessage());
         }
     }
-
 }
