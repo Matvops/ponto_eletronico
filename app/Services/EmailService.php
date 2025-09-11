@@ -32,9 +32,12 @@ class EmailService {
     {
      
         $url = $this->buildUrl($path, $pathParams);
-        $this->mailable->setLink($url);
 
-        $response = Mail::to($this->email)->send($this->mailable);
+        $response = false;
+        if($this->email && $this->mailable) {
+            $this->mailable->setLink($url);
+            $response =  Mail::to($this->email)->send($this->mailable);
+        }
 
         if(!$response) throw new Exception("Falha ao enviar email");
     }
