@@ -25,4 +25,11 @@ class UserRepository {
     {
         return User::find($usr_id);
     }
+
+    public function getOnlyActiveUsersByEmail($email)
+    {
+        return User::where('email', $email)
+                        ->whereNull('deleted_at')
+                        ->first();
+    }
 }
