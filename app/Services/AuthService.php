@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Mail\ConfirmationCode;
 use App\Models\User;
+use App\Repositories\UserRepository;
+use App\Utils\Functions;
 use App\Utils\Response;
 use Carbon\Carbon;
 use Exception;
@@ -15,11 +17,12 @@ use Illuminate\Support\Str;
 
 class AuthService {
     
-    private EmailService $emailService;
+    public function __construct(
+                                private EmailService $emailService,
+                                private UserRepository $userRepository
+                            )
 
-    public function __construct(EmailService $emailService)
     {
-        $this->emailService = $emailService;
     }
 
     public function authentication($dados): Response
@@ -27,30 +30,33 @@ class AuthService {
         try {
 
             extract($dados);
-            $this->authenticate($email, $password);
 
-            DB::commit();
+            $user = $this->userRepository->getOnlyActiveUsersByEmail($email);
+
+            if(!$user) throw new Exception("Email ou senha são inválidos");
+
+            $this->authenticate($user, $password);
+
+            $this->login($user);
+
             return Response::getResponse(true);
         } catch (Exception $e) {
-            DB::rollBack();
             return Response::getResponse(false, message: $e->getMessage());
         }
     }
 
-    private function authenticate($email, $password) {
-        $user = User::where('email', $email)
-                        ->whereNull('deleted_at')
-                        ->first();
-
-        if(!$user) throw new Exception("Usuário não encontrado");
+    private function authenticate(User $user, $password) 
+    {
 
         if(!$user->email_verified_at) throw new Exception("Verifique seu email.");
 
         if(!password_verify($password, $user->password)) throw new Exception("Email ou senha são inválidos");
+    }
 
+    private function login(User $user): void
+    {
         Auth::login($user);
-
-        session()->regenerate();
+        Functions::regenerateSession();
     }
 
     public function sendEmailConfirmation($email): Response
