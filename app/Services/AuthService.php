@@ -65,13 +65,14 @@ class AuthService {
         try {
             DB::beginTransaction();
 
-            $user = User::where('email', $email)
-                            ->whereNull('deleted_at')
-                            ->first();
+            $user = $this->userRepository->getOnlyActiveUsersByEmail($email);
 
+            if(!$user) throw new Exception('Erro ao enviar email');
+            
             if(!$user->email_verified_at) throw new Exception("Verifique seu cadastro no email");
 
-            $user->confirmation_code = $this->generateRandomConfirmationCode();
+            $maxDigits = 4;
+            $user->confirmation_code = Functions::generateRandomCode($maxDigits);
             $user->save();    
 
             $this->emailService->setMailStructure($user->email, new ConfirmationCode($user->confirmation_code, $user->username));
@@ -83,15 +84,6 @@ class AuthService {
             DB::rollBack();
             return Response::getResponse(false, $e->getMessage());
         }
-    }
-
-    private function generateRandomConfirmationCode(): int
-    {
-        $random = rand(1, 9999);
-
-        $code = str_pad(strval($random), 4, '0', STR_PAD_RIGHT);
-
-        return intval($code);
     }
 
     public function confirmCode(array $dados): Response
