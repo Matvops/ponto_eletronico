@@ -8,4 +8,9 @@ class Functions {
     {
         return bcrypt($password);
     }
+
+    public static function regenerateSession(): void
+    {
+        session()->regenerate();
+    }
 }
