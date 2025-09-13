@@ -13,4 +13,14 @@ class Functions {
     {
         session()->regenerate();
     }
+
+    public static function generateRandomCode($maxDigits): int
+    {
+        $random = rand(1, 9999);
+
+        $code = str_pad(strval($random), $maxDigits, '0', STR_PAD_RIGHT);
+
+        return intval($code);
+
+    }
 }
