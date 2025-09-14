@@ -349,6 +349,121 @@ class AuthServiceTest extends TestCase {
         $this->assertSame("Código inválido. Verifique seu email!", $response->getMessage());
     }
 
+    public function test_store_new_password_successfully(): void
+    {
+        DB::expects('beginTransaction')->andReturnSelf();
+        DB::expects('commit')->andReturnSelf();
+
+        $functionsMock = Mockery::mock('alias:' . Functions::class);
+        $functionsMock->shouldReceive('passwordHash')
+                            ->withAnyArgs()
+                            ->andReturn('zyx');
+
+
+        $data = [
+            'token' => 'abcdefg',
+            'email' => 'aabbcc',
+            'password' => 'xyz'
+        ];
+
+        $tokenDecrypted = 'gfedcba';
+        $emailDecrypted = 'ccbbaa';
+
+        $cryptMock = Mockery::mock('alias:' . Crypt::class);
+
+        $cryptMock->shouldReceive('decrypt')
+                        ->with($data['token'])
+                        ->andReturn($tokenDecrypted);
+
+        $cryptMock->shouldReceive('decrypt')
+                        ->with($data['email'])
+                        ->andReturn($emailDecrypted);
+
+        $userMock = Mockery::mock(User::class);
+
+        $userMock->shouldReceive('save')
+                    ->andReturnSelf();
+
+        $this->makeGetAttributeUser('token', $userMock, $tokenDecrypted);
+
+        $this->makeSetAttributeUser('password', $userMock, 'zyx');
+        $this->makeSetAttributeUser('token', $userMock, null);
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersByEmail')
+                                    ->willReturn($userMock);
+
+        $response = $this->authService->storeNewPassword($data);
+
+        $this->assertTrue($response->getStatus());
+    }
+
+    public function test_store_new_password_with_error_invalid_email(): void
+    {
+        DB::expects('beginTransaction')->andReturnSelf();
+        DB::expects('rollback')->andReturnSelf();
+
+        
+
+        Crypt::expects('decrypt')
+                ->atLeast()->times(2)
+                ->andReturnSelf();
+
+
+        $data = [
+            'token' => 'abcdefg',
+            'email' => 'aabbcc',
+            'password' => 'xyz'
+        ];
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersByEmail')
+                                    ->willReturn(null);
+
+        $response = $this->authService->storeNewPassword($data);
+
+        $this->assertFalse($response->getStatus());
+        $this->assertSame('Email inválido', $response->getMessage());
+    }
+
+
+     public function test_store_new_password_with_error_invalid_token(): void
+    {
+        DB::expects('beginTransaction')->andReturnSelf();
+        DB::expects('rollback')->andReturnSelf();
+
+
+        $data = [
+            'token' => 'abcdefg',
+            'email' => 'aabbcc',
+            'password' => 'xyz'
+        ];
+
+        $tokenDecrypted = 'gfedcba';
+        $emailDecrypted = 'ccbbaa';
+
+        $cryptMock = Mockery::mock('alias:' . Crypt::class);
+
+        $cryptMock->shouldReceive('decrypt')
+                        ->with($data['token'])
+                        ->andReturn($tokenDecrypted);
+
+        $cryptMock->shouldReceive('decrypt')
+                        ->with($data['email'])
+                        ->andReturn($emailDecrypted);
+
+        $userMock = Mockery::mock(User::class);
+
+
+        $this->makeGetAttributeUser('token', $userMock, 'aabbcc');
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersByEmail')
+                                    ->willReturn($userMock);
+
+        $response = $this->authService->storeNewPassword($data);
+
+        $this->assertFalse($response->getStatus());
+        $this->assertSame('Token inválido', $response->getMessage());
+    }
+
     private function makeGetAttributeUser(string $attribute, User&MockInterface $modelMock, ...$values): void
     {
         $modelMock->shouldReceive('getAttribute')
