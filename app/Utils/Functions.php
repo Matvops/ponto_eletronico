@@ -21,6 +21,10 @@ class Functions {
         $code = str_pad(strval($random), $maxDigits, '0', STR_PAD_RIGHT);
 
         return intval($code);
+    }
 
+    public static function concatenateNumbersInArrayToInt(array $numbers): int
+    {
+        return intval($numbers[0] . $numbers[1] . $numbers[2] . $numbers[3]);
     }
 }
