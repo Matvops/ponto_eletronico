@@ -9,12 +9,14 @@ use App\Services\EmailService;
 use App\Utils\Functions;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\RunClassInSeparateProcess;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Illuminate\Support\Str;
 
 #[RunClassInSeparateProcess]
 class AuthServiceTest extends TestCase {
@@ -254,6 +256,97 @@ class AuthServiceTest extends TestCase {
 
         $this->assertFalse($response->getStatus());
         $this->assertSame("Falha ao enviar email", $response->getMessage());
+    }
+
+    public function test_confirm_code_successfully(): void
+    {
+        DB::expects('beginTransaction')
+            ->andReturnSelf();
+        
+        DB::expects('commit')
+            ->andReturnSelf();
+
+        $code = 1234;
+        $functionsMock = Mockery::mock("alias:" . Functions::class);
+        $functionsMock->shouldReceive('concatenateNumbersInArrayToInt')
+                        ->withAnyArgs()
+                        ->andReturn($code);
+
+        $token = 'abcdefg';
+        $strMock = Mockery::mock('alias:' . Str::class);
+        $strMock->shouldReceive('random')
+                    ->with(64)
+                    ->andReturn($token);
+
+        $data = [ 
+            'email' => 'user@example.com',
+            'numbers' => [1, 2, 3, 4]
+        ];
+
+        Crypt::expects('encrypt')
+                ->atLeast()->times(2)
+                ->withAnyArgs()
+                ->andReturnSelf();
+
+        $userMock = Mockery::mock(User::class);
+
+        $userMock->shouldReceive('save')
+                    ->andReturnSelf();
+
+        $this->makeGetAttributeUser('confirmation_code', $userMock, $code);
+        $this->makeGetAttributeUser('token', $userMock, $token);
+        $this->makeGetAttributeUser('email', $userMock, $data['email']);
+
+        $this->makeSetAttributeUser('token', $userMock, $token);
+        $this->makeSetAttributeUser('confirmation_code', $userMock, null);
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersByEmail')
+                                    ->willReturn($userMock);
+
+        $response = $this->authService->confirmCode($data);
+
+        $this->assertTrue($response->getStatus());
+    }
+
+    public function test_confirm_code_with_error_invalid_code(): void
+    {
+        DB::expects('beginTransaction')
+            ->andReturnSelf();
+        
+        DB::expects('rollback')
+            ->andReturnSelf();
+
+        $code = 1234;
+        $functionsMock = Mockery::mock("alias:" . Functions::class);
+        $functionsMock->shouldReceive('concatenateNumbersInArrayToInt')
+                        ->withAnyArgs()
+                        ->andReturn($code);
+
+        $token = 'abcdefg';
+        $strMock = Mockery::mock('alias:' . Str::class);
+        $strMock->shouldReceive('random')
+                    ->with(64)
+                    ->andReturn($token);
+
+        $data = [ 
+            'email' => 'user@example.com',
+            'numbers' => [1, 2, 3, 4]
+        ];
+
+        $userMock = Mockery::mock(User::class);
+
+        $userMock->shouldReceive('save')
+                    ->andReturnSelf();
+
+        $this->makeGetAttributeUser('confirmation_code', $userMock, 1111);
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersByEmail')
+                                    ->willReturn($userMock);
+
+        $response = $this->authService->confirmCode($data);
+
+        $this->assertFalse($response->getStatus());
+        $this->assertSame("Código inválido. Verifique seu email!", $response->getMessage());
     }
 
     private function makeGetAttributeUser(string $attribute, User&MockInterface $modelMock, ...$values): void
