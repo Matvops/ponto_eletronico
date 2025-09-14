@@ -116,14 +116,13 @@ class AuthService {
             $token = Crypt::decrypt($dados['token']);
             $email = Crypt::decrypt($dados['email']);
 
-            $user = User::where('email', $email)
-                            ->whereNull('deleted_at')
-                            ->first(); 
+            $user = $this->userRepository->getOnlyActiveUsersByEmail($email);
             
             if(!$user) throw new Exception('Email inválido');
+
             if($user->token !== $token) throw new Exception('Token inválido');
 
-            $user->password = bcrypt($dados['password']);
+            $user->password = Functions::passwordHash($dados['password']);
             $user->token = null;
             $user->save();
             
