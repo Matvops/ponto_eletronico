@@ -32,4 +32,12 @@ class UserRepository {
                         ->whereNull('deleted_at')
                         ->first();
     }
+
+    public function getOnlyActiveUsersWithEmailNotVerifiedByToken($token)
+    {
+        return User::where('token', $token)
+                            ->whereNull('email_verified_at')
+                            ->whereNull('deleted_at')
+                            ->first();
+    }
 }
