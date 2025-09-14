@@ -139,10 +139,7 @@ class AuthService {
         try {
             DB::beginTransaction();
 
-            $user = User::where('token', $token)
-                            ->whereNull('email_verified_at')
-                            ->whereNull('deleted_at')
-                            ->first();
+            $user = $this->userRepository->getOnlyActiveUsersWithEmailNotVerifiedByToken($token);
             
             if(!$user) throw new Exception("Token inválido");
 
