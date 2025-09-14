@@ -68,7 +68,7 @@ class AuthService {
             $user = $this->userRepository->getOnlyActiveUsersByEmail($email);
 
             if(!$user) throw new Exception('Erro ao enviar email');
-            
+
             if(!$user->email_verified_at) throw new Exception("Verifique seu cadastro no email");
 
             $maxDigits = 4;
@@ -91,12 +91,9 @@ class AuthService {
         try {
             DB::beginTransaction();
             
-            $user = User::where('email', $dados['email'])
-                            ->whereNull('deleted_at')
-                            ->first();
+            $user = $this->userRepository->getOnlyActiveUsersByEmail($dados['email']);
 
-            $code = $this->concatenateNumbers($dados['numbers']);
-
+            $code = Functions::concatenateNumbersInArrayToInt($dados['numbers']);
             if($user->confirmation_code !== $code) throw new Exception("Código inválido. Verifique seu email!"); 
 
             $user->token = Str::random(64);
@@ -109,11 +106,6 @@ class AuthService {
             DB::rollBack();
             return Response::getResponse(false, $e->getMessage());
         }
-    }
-
-    private function concatenateNumbers(array $numbers): int
-    {
-        return intval($numbers[0] . $numbers[1] . $numbers[2] . $numbers[3]);
     }
 
     public function storeNewPassword(array $dados): Response
