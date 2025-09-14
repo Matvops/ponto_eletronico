@@ -7,6 +7,7 @@ use App\Repositories\UserRepository;
 use App\Services\AuthService;
 use App\Services\EmailService;
 use App\Utils\Functions;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
@@ -425,7 +426,7 @@ class AuthServiceTest extends TestCase {
     }
 
 
-     public function test_store_new_password_with_error_invalid_token(): void
+    public function test_store_new_password_with_error_invalid_token(): void
     {
         DB::expects('beginTransaction')->andReturnSelf();
         DB::expects('rollback')->andReturnSelf();
@@ -462,6 +463,50 @@ class AuthServiceTest extends TestCase {
 
         $this->assertFalse($response->getStatus());
         $this->assertSame('Token inválido', $response->getMessage());
+    }
+
+    public function test_verify_email_with_success(): void
+    {
+        DB::expects('beginTransaction')->andReturnSelf();
+        DB::expects('commit')->andReturnSelf();
+
+        $nowMock = '2025-09-09 17:41:28.000';
+        $carbonMock = Mockery::mock('alias:' . Carbon::class);
+        $carbonMock->shouldReceive('now')
+                        ->andReturn($nowMock);
+        
+        $userMock = Mockery::mock(User::class);
+
+        $userMock->shouldReceive('save')
+                    ->andReturnSelf();
+
+
+        $this->makeSetAttributeUser('token', $userMock, null);
+        $this->makeSetAttributeUser('email_verified_at', $userMock, $nowMock);
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersWithEmailNotVerifiedByToken')
+                                    ->willReturn($userMock);
+
+        $token = 'aabbcc';
+        $response = $this->authService->verifyEmail($token);
+
+        $this->assertTrue($response->getStatus());
+        $this->assertSame("Email confirmado com sucesso!", $response->getMessage());
+    }
+
+    public function test_verify_email_with_error_invalid_token(): void
+    {
+        DB::expects('beginTransaction')->andReturnSelf();
+        DB::expects('rollback')->andReturnSelf();
+
+        $this->userRepositoryStub->method('getOnlyActiveUsersWithEmailNotVerifiedByToken')
+                                    ->willReturn(null);
+
+        $token = 'aabbcc';
+        $response = $this->authService->verifyEmail($token);
+
+        $this->assertFalse($response->getStatus());
+        $this->assertSame("Token inválido", $response->getMessage());
     }
 
     private function makeGetAttributeUser(string $attribute, User&MockInterface $modelMock, ...$values): void
