@@ -24,7 +24,7 @@ class ForgotPassword extends Component
 
         $this->email;
 
-        $service = new AuthService(new EmailService());
+        $service = app(AuthService::class);
 
         $service->sendEmailConfirmation($this->email);
 
