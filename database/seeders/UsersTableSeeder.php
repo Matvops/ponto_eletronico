@@ -23,7 +23,8 @@ class UsersTableSeeder extends Seeder
                 'token' => null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
-                'deleted_at' => null
+                'deleted_at' => null,
+                'confirmation_code' => null
             ],
             [
                 'username' => 'user2',
@@ -34,7 +35,8 @@ class UsersTableSeeder extends Seeder
                 'token' => null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
-                'deleted_at' => null
+                'deleted_at' => null,
+                'confirmation_code' => null
             ]
         ]);
     }
