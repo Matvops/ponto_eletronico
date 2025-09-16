@@ -1,9 +1,6 @@
 <a id="readme-top"></a>
 
-<!-- PROJECT SHIELDS -->
-![Contributors][contributors-shield]
-![Forks][forks-shield]
-![Linkedin][linkedin-shield]
+[![Linkedin][linkedin-shield]](https://www.linkedin.com/in/matheus-cadenassi-799125321/)
 
 <!-- PROJECT LOGO -->
 <br />
@@ -206,9 +203,5 @@ https://github.com/user-attachments/assets/8a87bac0-1158-43d7-a8dc-f0541607f3b4
   <strong>Link do Linkedin:</strong> https://www.linkedin.com/in/matheus-cadenassi-799125321/
 </div>
 
-[contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
-[contributors-url]: https://github.com/Matvops/ponto_eletronico/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
-[forks-url]: https://github.com/Matvops/ponto_eletronico/forks
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://www.linkedin.com/in/matheus-cadenassi-799125321/
+
