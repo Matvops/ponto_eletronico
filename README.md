@@ -1,4 +1,3 @@
-<img width="1920" height="1080" alt="Captura de tela de 2025-09-16 16-21-37" src="https://github.com/user-attachments/assets/b1a4ba31-0c67-4108-878a-6ca01e593b4a" /><!-- Improved compatibility of back to top link -->
 <a id="readme-top"></a>
 
 <!-- PROJECT SHIELDS -->
