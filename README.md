@@ -1,4 +1,4 @@
-<!-- Improved compatibility of back to top link -->
+<img width="1920" height="1080" alt="Captura de tela de 2025-09-16 16-21-37" src="https://github.com/user-attachments/assets/b1a4ba31-0c67-4108-878a-6ca01e593b4a" /><!-- Improved compatibility of back to top link -->
 <a id="readme-top"></a>
 
 <!-- PROJECT SHIELDS -->
@@ -152,6 +152,9 @@ Essas instruções vão te ajudar a rodar o projeto localmente.
 
 ### Cadastrar usuário (visualização administrador)
 <img width="70%" alt="Tela cadastro usuário" src="https://github.com/user-attachments/assets/8a3e2661-e624-4d5a-9728-4d1b9170f07d" />
+
+### Informações sobre cobertura do código-fonte, com testes.
+<img width="70%" alt="Informações de testes" src="https://github.com/user-attachments/assets/63b746b4-712a-4784-abcf-d9084f943a58" />
 
 
 ### 🖥️ Demo
