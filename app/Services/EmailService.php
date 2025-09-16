@@ -2,26 +2,28 @@
 
 namespace App\Services;
 
-use App\Mail\VerifyEmail;
-use App\Models\User;
 use Exception;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Mail;
 
 class EmailService {
 
-    private User $user;
-    private Mailable $mailable;
+    private $email;
+    private $mailable;
 
-    public function __construct(User $user, Mailable $mailable)
+    public function __construct(?string $email = null, ?Mailable $mailable = null)
     {
-        $this->user = $user;
+        $this->email = $email;
         $this->mailable = $mailable;
     }
 
     public function send(): void
     {
-        $response =  Mail::to($this->user->email)->send($this->mailable);
+
+        $response = false;
+        if($this->email && $this->mailable) {
+            $response =  Mail::to($this->email)->send($this->mailable);
+        }
 
         if(!$response) throw new Exception("Falha ao enviar email");
     }
@@ -30,9 +32,12 @@ class EmailService {
     {
      
         $url = $this->buildUrl($path, $pathParams);
-        $this->mailable->setLink($url);
 
-        $response = Mail::to($this->user->email)->send($this->mailable);
+        $response = false;
+        if($this->email && $this->mailable) {
+            $this->mailable->setLink($url);
+            $response =  Mail::to($this->email)->send($this->mailable);
+        }
 
         if(!$response) throw new Exception("Falha ao enviar email");
     }
@@ -51,5 +56,10 @@ class EmailService {
         
 
         return $url;
+    }
+
+    public function setMailStructure(string $email, Mailable $mailable) {
+        $this->email = $email;
+        $this->mailable = $mailable;
     }
 }

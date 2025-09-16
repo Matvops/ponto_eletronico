@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Mail\ConfirmationCode;
 use App\Models\User;
+use App\Repositories\UserRepository;
+use App\Utils\Functions;
 use App\Utils\Response;
 use Carbon\Carbon;
 use Exception;
@@ -15,35 +17,46 @@ use Illuminate\Support\Str;
 
 class AuthService {
     
+    public function __construct(
+                                private EmailService $emailService,
+                                private UserRepository $userRepository
+                            )
+
+    {
+    }
+
     public function authentication($dados): Response
     {
         try {
 
             extract($dados);
-            $this->authenticate($email, $password);
 
-            DB::commit();
+            $user = $this->userRepository->getOnlyActiveUsersByEmail($email);
+
+            if(!$user) throw new Exception("Email ou senha são inválidos");
+
+            $this->authenticate($user, $password);
+
+            $this->login($user);
+
             return Response::getResponse(true);
         } catch (Exception $e) {
-            DB::rollBack();
             return Response::getResponse(false, message: $e->getMessage());
         }
     }
 
-    private function authenticate($email, $password) {
-        $user = User::where('email', $email)
-                        ->whereNull('deleted_at')
-                        ->first();
-
-        if(!$user) throw new Exception("Usuário não encontrado");
+    private function authenticate(User $user, $password) 
+    {
 
         if(!$user->email_verified_at) throw new Exception("Verifique seu email.");
 
         if(!password_verify($password, $user->password)) throw new Exception("Email ou senha são inválidos");
+    }
 
+    private function login(User $user): void
+    {
         Auth::login($user);
-
-        session()->regenerate();
+        Functions::regenerateSession();
     }
 
     public function sendEmailConfirmation($email): Response
@@ -52,17 +65,18 @@ class AuthService {
         try {
             DB::beginTransaction();
 
-            $user = User::where('email', $email)
-                            ->whereNull('deleted_at')
-                            ->first();
+            $user = $this->userRepository->getOnlyActiveUsersByEmail($email);
+
+            if(!$user) throw new Exception('Erro ao enviar email');
 
             if(!$user->email_verified_at) throw new Exception("Verifique seu cadastro no email");
 
-            $user->confirmation_code = $this->generateRandomConfirmationCode();
+            $maxDigits = 4;
+            $user->confirmation_code = Functions::generateRandomCode($maxDigits);
             $user->save();    
 
-            $emailService = new EmailService($user, new ConfirmationCode($user->confirmation_code, $user->username));
-            $emailService->send();
+            $this->emailService->setMailStructure($user->email, new ConfirmationCode($user->confirmation_code, $user->username));
+            $this->emailService->send();
 
             DB::commit();
             return Response::getResponse(true, data: $user->email);
@@ -72,26 +86,14 @@ class AuthService {
         }
     }
 
-    private function generateRandomConfirmationCode(): int
-    {
-        $random = rand(1, 9999);
-
-        $code = str_pad(strval($random), 4, '0', STR_PAD_RIGHT);
-
-        return intval($code);
-    }
-
     public function confirmCode(array $dados): Response
     {
         try {
             DB::beginTransaction();
             
-            $user = User::where('email', $dados['email'])
-                            ->whereNull('deleted_at')
-                            ->first();
+            $user = $this->userRepository->getOnlyActiveUsersByEmail($dados['email']);
 
-            $code = $this->concatenateNumbers($dados['numbers']);
-
+            $code = Functions::concatenateNumbersInArrayToInt($dados['numbers']);
             if($user->confirmation_code !== $code) throw new Exception("Código inválido. Verifique seu email!"); 
 
             $user->token = Str::random(64);
@@ -106,11 +108,6 @@ class AuthService {
         }
     }
 
-    private function concatenateNumbers(array $numbers): int
-    {
-        return intval($numbers[0] . $numbers[1] . $numbers[2] . $numbers[3]);
-    }
-
     public function storeNewPassword(array $dados): Response
     {
         try {
@@ -119,14 +116,13 @@ class AuthService {
             $token = Crypt::decrypt($dados['token']);
             $email = Crypt::decrypt($dados['email']);
 
-            $user = User::where('email', $email)
-                            ->whereNull('deleted_at')
-                            ->first(); 
+            $user = $this->userRepository->getOnlyActiveUsersByEmail($email);
             
             if(!$user) throw new Exception('Email inválido');
+
             if($user->token !== $token) throw new Exception('Token inválido');
 
-            $user->password = bcrypt($dados['password']);
+            $user->password = Functions::passwordHash($dados['password']);
             $user->token = null;
             $user->save();
             
@@ -143,10 +139,7 @@ class AuthService {
         try {
             DB::beginTransaction();
 
-            $user = User::where('token', $token)
-                            ->whereNull('email_verified_at')
-                            ->whereNull('deleted_at')
-                            ->first();
+            $user = $this->userRepository->getOnlyActiveUsersWithEmailNotVerifiedByToken($token);
             
             if(!$user) throw new Exception("Token inválido");
 

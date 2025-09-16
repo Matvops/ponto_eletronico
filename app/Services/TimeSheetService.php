@@ -2,16 +2,22 @@
 
 namespace App\Services;
 
-use App\Enums\TimeSheetStatus;
-use App\Models\TimeSheet;
+use App\Repositories\TimeSheetRepository;
 use App\Utils\Response;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class TimeSheetService {
+
+    private TimeSheetRepository $timeSheetRepository;
+
+    public function __construct(TimeSheetRepository $timeSheetRepository)
+    {
+        $this->timeSheetRepository = $timeSheetRepository;
+    }
 
 
     public function punchClock($tis_id): Response
@@ -21,8 +27,8 @@ class TimeSheetService {
             DB::beginTransaction();
 
             $tis_id = Crypt::decrypt($tis_id);
-
-            $clock = TimeSheet::where('tis_id', $tis_id)->first();
+            
+            $clock = $this->timeSheetRepository->getTimeSheetByTisId($tis_id);
             
             if(!$clock) throw new Exception("Erro ao salvar registro de ponto");
 
@@ -41,32 +47,13 @@ class TimeSheetService {
     public function calculateTimeBalance($id = null): Response
     {
         try {
-            $sql = "SELECT 
-                CASE
-                    WHEN ((B.updated_at) - (A.updated_at + INTERVAL '10 hours')) < INTERVAL '-10 hours' THEN '00:00:00'
-                    ELSE (B.updated_at) - (A.updated_at + INTERVAL '10 hours')
-                END AS value
-                FROM time_sheet A
-                LEFT JOIN time_sheet B ON A.date = B.date 
-                AND A.tis_usr_id = ?
-                AND B.tis_usr_id = ?
-                WHERE A.type = 'ENTRADA' 
-                AND B.type = 'SAIDA'
-                AND A.status = ?
-                AND B.status = ?
-            ";
-
-            $differences = DB::select($sql, [
-                $id ?? Auth::user()->usr_id,
-                $id ?? Auth::user()->usr_id,
-                TimeSheetStatus::ATIVO->value,
-                TimeSheetStatus::ATIVO->value
-            ]);
+           
+            $differences = $this->timeSheetRepository->getTimesBalance($id);
 
             $dados = $this->calculateHoursIfExists($differences);
             
             return Response::getResponse(true, data: $dados);
-        } catch(Exception) {
+        } catch(Throwable $e) {
             return Response::getResponse(false, "Erro ao consultar saldo de horas! Entre em contato com o suporte.");
         }
     }
@@ -80,67 +67,43 @@ class TimeSheetService {
                 'status' => false
             ];
         }
-
-        $seconds = 0;
-        $minutes = 0;
-        $hours = 0;
-
-        foreach ($timesBalances as $timeBalance) {
-            $difference = $timeBalance->value;
-            $seconds = $this->calculate($seconds, $this->extractTimeUnit($difference, 'SECONDS'));
-            $minutes = $this->calculate($minutes, $this->extractTimeUnit($difference, 'MINUTES'));
-            $hours = $this->calculate($hours, $this->extractTimeUnit($difference, 'HOURS'));
+    
+        $totalHours = 0;
+        foreach($timesBalances as $timeBalance) {
+            $totalHours += $this->timeToSeconds($timeBalance->value);
         }
 
-        $seconds = $this->formatTime($seconds);
-        $minutes = $this->formatTime($minutes);
-        $hours = $this->formatTime($hours);
-
         return [
-            'timeBalance' => $hours . ':' . $minutes . ':' . $seconds,
-            'status' => $this->timeBalanceIsPositive($hours)
+            'timeBalance' => $this->secondsToTime($totalHours),
+            'status' => $this->timeBalanceIsPositive($totalHours)
         ];
     }
 
-    private function extractTimeUnit(string $time, string $unit): int
+    
+    private function timeToSeconds($time): int
     {
-        $timePartitioned = explode(':', $time);
-        switch ($unit) {
-            case 'SECONDS':
-                return intval($timePartitioned[2]);
-                break;
-            case 'MINUTES':
-                return intval($timePartitioned[1]);
-                break;
-            case 'HOURS':
-                return intval($timePartitioned[0]);
-                break;
-            default:
-                throw new Exception("Unidade de tempo inválida");
+        $negative = false;
+
+        $parts = explode(':', $time);
+
+        if($time[0] == '-') {
+            $negative = true;
         }
 
-        return $time;
-    }
-    
-    private function calculate(int $actual, int $difference): int
-    {
-        return $actual + $difference;
+        return $negative ? ($parts[0] * 3600) + ($parts[1] * 60) + $parts[2] * -1 : ($parts[0] * 3600) + ($parts[1] * 60) + $parts[2];
     }
 
-    private function formatTime($time): string
+    private function secondsToTime($seconds): string
     {
-        return $time == 0 ? '00' : strval($time) ; 
+        $hours = floor($seconds / 3600);
+        $seconds = $seconds % 3600;
+        $minutes = floor($seconds / 60);
+        $seconds = $seconds % 60;
+        return sprintf('%02d:%02d:%02d', $hours, abs($minutes), abs($seconds));
     }
 
     private function timeBalanceIsPositive($time): bool
     {
         return $time >= 0;
-    }
-
-    public static function updateTimeSheetStatus(int $usr_id){
-
-        TimeSheet::where('tis_usr_id', $usr_id)
-                    ->where('status', TimeSheetStatus::ATIVO)
-                    ->update(['status' => TimeSheetStatus::INATIVO]);
     }
 }

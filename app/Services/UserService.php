@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Factories\UserFactory;
 use App\Mail\VerifyEmail;
 use App\Models\User;
+use App\Repositories\TimeSheetRepository;
+use App\Repositories\UserRepository;
 use App\Utils\Response;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -13,17 +16,26 @@ use Illuminate\Support\Str;
 
 class UserService {
 
+    private UserRepository $userRepository;
+    private EmailService $emailService;
+    private TimeSheetRepository $timeSheetRepository;
+
+    public function __construct(UserRepository $userRepository, EmailService $emailService, TimeSheetRepository $timeSheetRepository)
+    {
+        $this->userRepository = $userRepository;
+        $this->emailService = $emailService;
+        $this->timeSheetRepository = $timeSheetRepository;
+    }
+
     public function updateUserData(array $userData): Response
     {
         try {
 
             DB::beginTransaction();
 
-            $emailExists = User::withTrashed()
-                                ->where('email', $userData['email'])
-                                ->exists();
-
-            $user = User::where('email', Auth::user()->email)->first();
+            $emailExists = $this->userRepository->emailExists($userData['email']);
+            
+            $user = $this->userRepository->getByEmail(Auth::user()->email);
 
             if($this->invalidEmail($userData['email'], $user->email, $emailExists)) throw new Exception("Email inválido");
 
@@ -63,8 +75,8 @@ class UserService {
             $path = '/verify_email';
             $pathParams = ['token' => $user->token];
 
-            $emailService = new EmailService($user, new VerifyEmail($user->username));
-            $emailService->sendWithPathParams($path, $pathParams);
+            $this->emailService->setMailStructure($user->email, new VerifyEmail($user->username));
+            $this->emailService->sendWithPathParams($path, $pathParams);
 
             $message = "Email de confirmação enviado! Verifique sua caixa de mensagens.";
             $emailAlterado = true;
@@ -85,23 +97,18 @@ class UserService {
     public function register(array $userData): Response
     {
         try {
+
             DB::beginTransaction();
 
-            $user = new User();
-            $user->username = $userData['username'];
-            $user->email = $userData['email'];
-            $user->password = bcrypt($userData['password']);
-            $user->role = strtoupper($userData['role']);
-            $user->email_verified_at = null;
-            $user->token = Str::random(64);
-            $user->confirmation_code = null;
+            $user = UserFactory::create($userData);
             $user->save();
 
             $path = '/verify_email';
             $pathParams = ['token' => $user->token];
 
-            $emailService = new EmailService($user, new VerifyEmail($user->username));
-            $emailService->sendWithPathParams($path, $pathParams);
+            $this->emailService->setMailStructure($user->email, new VerifyEmail($user->username));
+            $this->emailService->sendWithPathParams($path, $pathParams);
+
             $message = "Email de confirmação enviado para $user->email! Verifique a caixa de mensagens.";
 
             DB::commit();
@@ -117,9 +124,8 @@ class UserService {
         try {
             DB::beginTransaction();
 
-            $user = User::where('usr_id', Crypt::decrypt($id))
-                ->whereNull('deleted_at')
-                ->first();
+            $idDecrypted = Crypt::decrypt($id);
+            $user = $this->userRepository->getOnlyActiveUsersByUsrId($idDecrypted);
 
             if(!$user) throw new Exception();
 
@@ -138,19 +144,17 @@ class UserService {
         try {
             DB::beginTransaction();
 
-            $emailExists = User::withTrashed()
-                                ->where('email', $userData['email'])
-                                ->exists();
+            $emailExists = $this->userRepository->emailExists($userData['email']);
 
-            $user = User::where('usr_id', intval($userData['usr_id']))->first();
+            $user = $this->userRepository->getOnlyActiveUsersByUsrId($userData['usr_id']);
 
             if($this->invalidEmail($userData['email'], $user->email, $emailExists)) throw new Exception("Email inválido");
             
             $this->update($user, $userData);
             
             if($userData['reset_time_balance']) 
-                TimeSheetService::updateTimeSheetStatus($user->usr_id);
-            
+                $this->timeSheetRepository->resetTimeBalanceByUsrId($user->usr_id);
+
             DB::commit();
             return Response::getResponse(true, "Dados atualizados com sucesso!");
         } catch(Exception $e) {
@@ -158,5 +162,4 @@ class UserService {
             return Response::getResponse(false, $e->getMessage());
         }
     }
-
 }

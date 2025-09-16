@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Services\AuthService;
+use App\Services\EmailService;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -23,7 +24,7 @@ class ForgotPassword extends Component
 
         $this->email;
 
-        $service = new AuthService;
+        $service = app(AuthService::class);
 
         $service->sendEmailConfirmation($this->email);
 

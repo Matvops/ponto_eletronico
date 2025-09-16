@@ -35,7 +35,7 @@ class AdminUpdateProfile extends Component
 
         $this->usr_id = Crypt::decrypt($id);
 
-        $service = new TimeSheetService;
+        $service = app(TimeSheetService::class);
         $response = $service->calculateTimeBalance($this->usr_id);
 
         if(!$response->getStatus()) {
