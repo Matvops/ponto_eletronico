@@ -30,6 +30,9 @@ Route::middleware('guest')->group(function() {
     Route::get('/new_password/{email}/{token}', NewPassword::class)->name('new_password');
     Route::post('/new_password', [AuthController::class, 'storeNewPassword'])->name('store_new_password');
     Route::get('/verify_email/{token}', [AuthController::class, 'verifyEmail'])->name('verify_email');
+    Route::fallback(function() {
+        return redirect()->route('login');
+    });
 });
 
 Route::middleware('auth')->group(function() {
@@ -47,4 +50,7 @@ Route::middleware('auth')->group(function() {
     Route::middleware(IsUserMiddleware::class)->post('/punch_clock', [TimeSheetController::class, 'punchClock'])->name('punch_clock');
     Route::middleware(IsAdminMiddleware::class)->get('/admin_update/{id}', AdminUpdateProfile::class)->name('admin_update_profile');
     Route::middleware(IsAdminMiddleware::class)->post('/admin_update', [UserController::class, 'updateUserByAdminView'])->name('update_profile_by_admin');
+    Route::fallback(function() {
+        return redirect()->route('logout');
+    });
 });
