@@ -110,6 +110,10 @@ Essas instruções vão te ajudar a rodar o projeto localmente.
 6. Execute as migrations:
    ```sh 
    php artisan migrate
+7. Execute a seeder:
+   ```sh 
+   php artisan db:seed --class=UsersTableSeeder
+   
    
 <p align="right">(<a href="#readme-top">Voltar ao topo</a>)</p>
 
@@ -118,7 +122,23 @@ Essas instruções vão te ajudar a rodar o projeto localmente.
 1. Após a instalação, rode o servidor Laravel:
    ```sh 
    php artisan app:start
-  Acesse no navegador: http://localhost:8000 
+Acesse no navegador: http://localhost:8000 
+
+**USUÁRIOS:**
+<div>
+email:user1@gmail.com
+</div>
+<div>
+senha:Senha123
+</div>
+<br>
+<div>
+email:user2@gmail.com
+</div>
+<div>
+senha:Senha123
+</div>
+
 <p align="right">(<a href="#readme-top">Voltar ao topo</a>)</p>
 
 ## 📷 Telas do Sistema
