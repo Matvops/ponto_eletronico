@@ -2,15 +2,13 @@
 
 namespace App\Services;
 
-use App\Enums\TimeSheetStatus;
-use App\Models\TimeSheet;
 use App\Repositories\TimeSheetRepository;
 use App\Utils\Response;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class TimeSheetService {
 
@@ -55,7 +53,7 @@ class TimeSheetService {
             $dados = $this->calculateHoursIfExists($differences);
             
             return Response::getResponse(true, data: $dados);
-        } catch(Exception) {
+        } catch(Throwable $e) {
             return Response::getResponse(false, "Erro ao consultar saldo de horas! Entre em contato com o suporte.");
         }
     }
@@ -69,56 +67,39 @@ class TimeSheetService {
                 'status' => false
             ];
         }
-
-        $seconds = 0;
-        $minutes = 0;
-        $hours = 0;
-
-        foreach ($timesBalances as $timeBalance) {
-            $difference = $timeBalance->value;
-            $seconds = $this->calculate($seconds, $this->extractTimeUnit($difference, 'SECONDS'));
-            $minutes = $this->calculate($minutes, $this->extractTimeUnit($difference, 'MINUTES'));
-            $hours = $this->calculate($hours, $this->extractTimeUnit($difference, 'HOURS'));
+    
+        $totalHours = 0;
+        foreach($timesBalances as $timeBalance) {
+            $totalHours += $this->timeToSeconds($timeBalance->value);
         }
 
-        $seconds = $this->formatTime($seconds);
-        $minutes = $this->formatTime($minutes);
-        $hours = $this->formatTime($hours);
-
         return [
-            'timeBalance' => $hours . ':' . $minutes . ':' . $seconds,
-            'status' => $this->timeBalanceIsPositive($hours)
+            'timeBalance' => $this->secondsToTime($totalHours),
+            'status' => $this->timeBalanceIsPositive($totalHours)
         ];
     }
 
-    private function extractTimeUnit(string $time, string $unit): int
+    
+    private function timeToSeconds($time): int
     {
-        $timePartitioned = explode(':', $time);
-        switch ($unit) {
-            case 'SECONDS':
-                return intval($timePartitioned[2]);
-                break;
-            case 'MINUTES':
-                return intval($timePartitioned[1]);
-                break;
-            case 'HOURS':
-                return intval($timePartitioned[0]);
-                break;
-            default:
-                throw new Exception("Unidade de tempo inválida");
+        $negative = false;
+
+        $parts = explode(':', $time);
+
+        if($time[0] == '-') {
+            $negative = true;
         }
 
-        return $time;
-    }
-    
-    private function calculate(int $actual, int $difference): int
-    {
-        return $actual + $difference;
+        return $negative ? ($parts[0] * 3600) + ($parts[1] * 60) + $parts[2] * -1 : ($parts[0] * 3600) + ($parts[1] * 60) + $parts[2];
     }
 
-    private function formatTime($time): string
+    private function secondsToTime($seconds): string
     {
-        return $time == 0 ? '00' : strval($time) ; 
+        $hours = floor($seconds / 3600);
+        $seconds = $seconds % 3600;
+        $minutes = floor($seconds / 60);
+        $seconds = $seconds % 60;
+        return sprintf('%02d:%02d:%02d', $hours, abs($minutes), abs($seconds));
     }
 
     private function timeBalanceIsPositive($time): bool
